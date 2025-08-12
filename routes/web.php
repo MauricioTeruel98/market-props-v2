@@ -4,11 +4,23 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\admin\PropertiesController as AdminPropertiesController;
 use App\Http\Controllers\super\PropertiesController as SuperPropertiesController;
+use App\Http\Controllers\Public\PropertiesController as PublicPropertiesController;
 use App\Http\Middleware\EnsureSuperadmin;
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    $featuredProperties = App\Models\Property::with(['user'])
+        ->orderBy('created_at', 'desc')
+        ->limit(6)
+        ->get();
+    
+    return Inertia::render('public/landing', [
+        'featuredProperties' => $featuredProperties
+    ]);
 })->name('home');
+
+// Rutas públicas para propiedades
+Route::get('/public/properties', [PublicPropertiesController::class, 'index'])->name('public.properties.index');
+Route::get('/public/properties/{property}', [PublicPropertiesController::class, 'show'])->name('public.properties.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
