@@ -13,6 +13,7 @@ class PropertiesController extends Controller
     public function index(Request $request)
     {
         $query = Property::with(['user', 'images'])
+            ->where('status', 'available')
             ->orderBy('created_at', 'desc');
 
         // Filtro de búsqueda
@@ -72,10 +73,16 @@ class PropertiesController extends Controller
 
     public function show(Property $property)
     {
+        // Verificar que la propiedad esté disponible
+        if ($property->status !== 'available') {
+            abort(404, 'Propiedad no encontrada');
+        }
+
         $property->load(['user', 'images']);
 
-        // Obtener propiedades relacionadas
+        // Obtener propiedades relacionadas (solo disponibles)
         $relatedProperties = Property::where('id', '!=', $property->id)
+            ->where('status', 'available')
             ->where('modality', $property->modality)
             ->limit(3)
             ->get();

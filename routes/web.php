@@ -16,6 +16,7 @@ Route::get('/', function () {
     // Obtener todas las propiedades con coordenadas para el mapa
     $allProperties = App\Models\Property::with(['user', 'images'])
         ->select('id', 'title', 'address', 'latitude', 'longitude', 'modality', 'currency', 'price', 'amenities', 'cover_image')
+        ->where('status', 'available')
         ->whereNotNull('latitude')
         ->whereNotNull('longitude')
         ->where('latitude', '!=', '')

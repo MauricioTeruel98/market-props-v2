@@ -51,6 +51,7 @@ interface Property {
     modality: 'rent' | 'sale';
     currency: 'ars' | 'dollar';
     price: number;
+    status: 'available' | 'unavailable';
     amenities: string[];
     cover_image: string;
     images: Array<{
@@ -92,6 +93,7 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
         modality: property.modality,
         currency: property.currency,
         price: property.price.toString(),
+        status: property.status,
         amenities: property.amenities,
         cover_image: null as File | null,
         additional_images: [] as File[],
@@ -416,6 +418,22 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
                                     />
                                     {errors.price && (
                                         <p className="text-sm text-red-500 mt-1">{errors.price}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="status">Estado *</Label>
+                                    <Select value={data.status} onValueChange={(value) => setData('status', value)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Seleccionar estado" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="available">Disponible</SelectItem>
+                                            <SelectItem value="unavailable">No Disponible</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.status && (
+                                        <p className="text-sm text-red-500 mt-1">{errors.status}</p>
                                     )}
                                 </div>
                             </CardContent>

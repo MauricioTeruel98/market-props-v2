@@ -69,6 +69,7 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
         modality: '',
         currency: '',
         price: '',
+        status: 'available',
         amenities: [] as string[],
         cover_image: null as File | null,
         additional_images: [] as File[],
@@ -395,6 +396,22 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
                                     />
                                     {errors.price && (
                                         <p className="text-sm text-red-500 mt-1">{errors.price}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="status">Estado *</Label>
+                                    <Select value={data.status} onValueChange={(value) => setData('status', value)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Seleccionar estado" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="available">Disponible</SelectItem>
+                                            <SelectItem value="unavailable">No Disponible</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.status && (
+                                        <p className="text-sm text-red-500 mt-1">{errors.status}</p>
                                     )}
                                 </div>
                             </CardContent>
