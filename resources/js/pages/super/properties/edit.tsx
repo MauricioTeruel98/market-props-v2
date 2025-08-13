@@ -8,7 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Icon } from "@/components/icon";
+import { PropertyMapEditor } from "@/components/ui/property-map-editor";
+import { ImageValidator, useImageValidation } from "@/components/ui/image-validator";
 import { useState, useEffect, useRef } from "react";
+import { Textarea } from "@/components/ui/textarea";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -43,37 +46,61 @@ interface Property {
     id: number;
     title: string;
     address: string;
+    latitude?: number | null;
+    longitude?: number | null;
     modality: 'rent' | 'sale';
     currency: 'ars' | 'dollar';
     price: number;
+    status: 'available' | 'unavailable';
     amenities: string[];
     cover_image: string;
     images: Array<{
         id: number;
         image_path: string;
     }>;
+    whatsapp?: string;
+    facebook_messenger?: string;
+    contact_email?: string;
+    whatsapp_message?: string;
 }
 
 interface EditPropertyProps {
     property: Property;
+    user: {
+        whatsapp?: string;
+        facebook?: string;
+        facebook_messenger?: string;
+        email?: string;
+    };
 }
 
-export default function EditProperty({ property }: EditPropertyProps) {
+export default function EditProperty({ property, user }: EditPropertyProps) {
     const [coverPreview, setCoverPreview] = useState<string | null>(null);
     const [additionalPreviews, setAdditionalPreviews] = useState<string[]>([]);
     const [existingImages, setExistingImages] = useState(property.images);
     const [isLoadingPreviews, setIsLoadingPreviews] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Hook para validación de imágenes
+    const { validateFiles: validateCoverImage } = useImageValidation(2048);
+    const { validateFiles: validateAdditionalImages } = useImageValidation(2048);
+
     const { data, setData, post, processing, errors } = useForm({
         title: property.title,
         address: property.address,
+        latitude: property.latitude?.toString() || '',
+        longitude: property.longitude?.toString() || '',
         modality: property.modality,
         currency: property.currency,
         price: property.price.toString(),
+        status: property.status,
         amenities: property.amenities,
         cover_image: null as File | null,
         additional_images: [] as File[],
+        whatsapp: property.whatsapp || '',
+        facebook_messenger: property.facebook_messenger || '',
+        contact_email: property.contact_email || '',
+        whatsapp_message: property.whatsapp_message || '',
         _method: 'PUT',
     });
 
@@ -84,6 +111,14 @@ export default function EditProperty({ property }: EditPropertyProps) {
     const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            // Validar la imagen antes de procesarla
+            const validation = validateCoverImage([file]);
+            if (!validation.isValid) {
+                // Si hay errores de validación, no procesar la imagen
+                e.target.value = '';
+                return;
+            }
+
             setData('cover_image', file);
             const reader = new FileReader();
             reader.onload = (e) => setCoverPreview(e.target?.result as string);
@@ -94,19 +129,38 @@ export default function EditProperty({ property }: EditPropertyProps) {
     const handleAdditionalImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         const totalImages = existingImages.length + data.additional_images.length + files.length;
-        
+
         if (totalImages > 20) {
             alert(`Máximo 20 imágenes adicionales permitidas en total. Ya tienes ${existingImages.length + data.additional_images.length} y estás intentando agregar ${files.length}.`);
             return;
         }
-        
-        // Agregar nuevas imágenes a las existentes
-        const newFiles = [...data.additional_images, ...files];
+
+        // Validar las nuevas imágenes antes de procesarlas
+        const validation = validateAdditionalImages(files);
+        if (!validation.isValid) {
+            // Si hay errores de validación, no procesar las imágenes
+            e.target.value = '';
+            return;
+        }
+
+        // Filtrar solo las imágenes válidas
+        const validFiles = files.filter(file => {
+            const fileSizeKB = file.size / 1024;
+            return file.type.startsWith('image/') && fileSizeKB <= 2048;
+        });
+
+        if (validFiles.length !== files.length) {
+            const invalidCount = files.length - validFiles.length;
+            alert(`${invalidCount} imagen(es) no cumplen con los requisitos y no serán procesadas.`);
+        }
+
+        // Agregar solo las imágenes válidas
+        const newFiles = [...data.additional_images, ...validFiles];
         setData('additional_images', newFiles);
-        
+
         // Mostrar indicador de carga
         setIsLoadingPreviews(true);
-        
+
         // Generar previews solo para las nuevas imágenes
         const newPreviews = files.map(file => {
             return new Promise<string>((resolve, reject) => {
@@ -115,9 +169,9 @@ export default function EditProperty({ property }: EditPropertyProps) {
                     reject(new Error('El archivo no es una imagen válida'));
                     return;
                 }
-                
+
                 const reader = new FileReader();
-                
+
                 reader.onload = (e) => {
                     if (e.target?.result && typeof e.target.result === 'string') {
                         resolve(e.target.result);
@@ -125,15 +179,15 @@ export default function EditProperty({ property }: EditPropertyProps) {
                         reject(new Error('No se pudo generar la previsualización'));
                     }
                 };
-                
+
                 reader.onerror = () => {
                     reject(new Error(`Error al leer el archivo: ${file.name}`));
                 };
-                
+
                 reader.onabort = () => {
                     reject(new Error('Lectura del archivo cancelada'));
                 };
-                
+
                 try {
                     reader.readAsDataURL(file);
                 } catch {
@@ -141,7 +195,7 @@ export default function EditProperty({ property }: EditPropertyProps) {
                 }
             });
         });
-        
+
         Promise.all(newPreviews)
             .then(newPreviewUrls => {
                 setAdditionalPreviews(prev => [...prev, ...newPreviewUrls]);
@@ -167,8 +221,28 @@ export default function EditProperty({ property }: EditPropertyProps) {
         }
     };
 
+    const handleLocationChange = (latitude: number | null, longitude: number | null) => {
+        setData('latitude', latitude?.toString() || '');
+        setData('longitude', longitude?.toString() || '');
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Limpiar coordenadas vacías antes de enviar
+        const formData = { ...data };
+        if (formData.latitude === '') {
+            formData.latitude = '';
+        }
+        if (formData.longitude === '') {
+            formData.longitude = '';
+        }
+
+        // Actualizar el formulario con los datos limpios
+        setData('latitude', formData.latitude);
+        setData('longitude', formData.longitude);
+
+        // Enviar el formulario
         post(`/admin/properties/${property.id}`);
     };
 
@@ -210,6 +284,37 @@ export default function EditProperty({ property }: EditPropertyProps) {
     const getRemainingImages = () => {
         return Math.max(0, 20 - (existingImages.length + data.additional_images.length));
     };
+
+    // Función para convertir URL de Facebook a Messenger
+    const convertFacebookToMessenger = (facebookUrl: string): string => {
+        if (!facebookUrl) return '';
+        
+        // Extraer el nombre de usuario de la URL de Facebook
+        const match = facebookUrl.match(/facebook\.com\/([^/?]+)/);
+        if (match) {
+            const username = match[1].split('?')[0]; // Remover parámetros adicionales
+            return `https://m.me/${username}`;
+        }
+        
+        return facebookUrl; // Si no se puede convertir, devolver la URL original
+    };
+
+    // Función para regenerar URL de Messenger
+    const regenerateMessengerUrl = () => {
+        if (user.facebook) {
+            const messengerUrl = convertFacebookToMessenger(user.facebook);
+            setData('facebook_messenger', messengerUrl);
+        }
+    };
+
+    // Función para restaurar mensaje genérico de WhatsApp
+    const restoreDefaultWhatsAppMessage = () => {
+        const defaultMessage = "Hola! Me interesa esta propiedad. ¿Podrías darme más información sobre disponibilidad, horarios de visita y cualquier detalle adicional que consideres importante?";
+        setData('whatsapp_message', defaultMessage);
+    };
+
+    // Mensaje genérico por defecto
+    const defaultWhatsAppMessage = "Hola! Me interesa esta propiedad. ¿Podrías darme más información sobre disponibilidad, horarios de visita y cualquier detalle adicional que consideres importante?";
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -315,6 +420,22 @@ export default function EditProperty({ property }: EditPropertyProps) {
                                         <p className="text-sm text-red-500 mt-1">{errors.price}</p>
                                     )}
                                 </div>
+
+                                <div>
+                                    <Label htmlFor="status">Estado *</Label>
+                                    <Select value={data.status} onValueChange={(value: 'available' | 'unavailable') => setData('status', value)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Seleccionar estado" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="available">Disponible</SelectItem>
+                                            <SelectItem value="unavailable">No Disponible</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.status && (
+                                        <p className="text-sm text-red-500 mt-1">{errors.status}</p>
+                                    )}
+                                </div>
                             </CardContent>
                         </Card>
 
@@ -324,6 +445,10 @@ export default function EditProperty({ property }: EditPropertyProps) {
                                 <CardTitle>Imagen de Portada</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
+                                {/* ALERTA DE ADVERTENCIA */}
+                                <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 rounded mb-2 text-sm">
+                                    <strong>Advertencia:</strong> La imagen debe ser inferior a 2MB.
+                                </div>
                                 <div>
                                     <Label htmlFor="cover_image">Cambiar imagen (opcional)</Label>
                                     <Input
@@ -346,6 +471,15 @@ export default function EditProperty({ property }: EditPropertyProps) {
                                         className="w-full h-auto max-h-48 object-contain rounded-lg"
                                     />
                                 </div>
+
+                                {/* Validación de nueva imagen de portada */}
+                                {data.cover_image && (
+                                    <ImageValidator
+                                        files={[data.cover_image]}
+                                        maxSizeKB={2048}
+                                        maxFiles={1}
+                                    />
+                                )}
 
                                 {/* Vista previa de nueva imagen */}
                                 {coverPreview && (
@@ -373,6 +507,21 @@ export default function EditProperty({ property }: EditPropertyProps) {
                         </Card>
                     </div>
 
+                    {/* Editor de ubicación en el mapa */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Ubicación en el Mapa</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <PropertyMapEditor
+                                initialLatitude={property.latitude}
+                                initialLongitude={property.longitude}
+                                onLocationChange={handleLocationChange}
+                                height="400px"
+                            />
+                        </CardContent>
+                    </Card>
+
                     {/* Amenities */}
                     <Card>
                         <CardHeader>
@@ -385,7 +534,7 @@ export default function EditProperty({ property }: EditPropertyProps) {
                                         <Checkbox
                                             id={amenity}
                                             checked={data.amenities.includes(amenity)}
-                                            onCheckedChange={(checked) => 
+                                            onCheckedChange={(checked) =>
                                                 handleAmenityChange(amenity, checked as boolean)
                                             }
                                         />
@@ -394,6 +543,106 @@ export default function EditProperty({ property }: EditPropertyProps) {
                                         </Label>
                                     </div>
                                 ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Campos de Contacto */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Información de Contacto</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="whatsapp">WhatsApp</Label>
+                                    <Input
+                                        id="whatsapp"
+                                        value={data.whatsapp}
+                                        onChange={(e) => setData('whatsapp', e.target.value)}
+                                        placeholder="Ej: +54 9 11 1234-5678"
+                                        className={errors.whatsapp ? 'border-red-500' : ''}
+                                    />
+                                    {errors.whatsapp && (
+                                        <p className="text-sm text-red-500 mt-1">{errors.whatsapp}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="facebook_messenger">Facebook Messenger</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            id="facebook_messenger"
+                                            value={data.facebook_messenger}
+                                            onChange={(e) => setData('facebook_messenger', e.target.value)}
+                                            placeholder="Ej: https://m.me/tu.usuario"
+                                            className={errors.facebook_messenger ? 'border-red-500' : ''}
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={regenerateMessengerUrl}
+                                            disabled={!user.facebook}
+                                        >
+                                            <Icon name="refresh" className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        {user.facebook 
+                                            ? `Se generó automáticamente desde tu Facebook: ${user.facebook}`
+                                            : 'Configura tu Facebook en tu perfil para generar automáticamente la URL de Messenger'
+                                        }
+                                    </p>
+                                    {errors.facebook_messenger && (
+                                        <p className="text-sm text-red-500 mt-1">{errors.facebook_messenger}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="contact_email">Email de Contacto</Label>
+                                <Input
+                                    id="contact_email"
+                                    type="email"
+                                    value={data.contact_email}
+                                    onChange={(e) => setData('contact_email', e.target.value)}
+                                    placeholder="Ej: contacto@ejemplo.com"
+                                    className={errors.contact_email ? 'border-red-500' : ''}
+                                />
+                                {errors.contact_email && (
+                                    <p className="text-sm text-red-500 mt-1">{errors.contact_email}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <Label htmlFor="whatsapp_message">Mensaje Predeterminado de WhatsApp</Label>
+                                <div className="flex items-center gap-2">
+                                    <Textarea
+                                        id="whatsapp_message"
+                                        value={data.whatsapp_message || defaultWhatsAppMessage}
+                                        onChange={(e) => setData('whatsapp_message', e.target.value)}
+                                        placeholder="Ej: Hola! Me interesa esta propiedad. ¿Podrías darme más información?"
+                                        className={errors.whatsapp_message ? 'border-red-500' : ''}
+                                        rows={3}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={restoreDefaultWhatsAppMessage}
+                                        title="Restaurar mensaje por defecto"
+                                    >
+                                        <Icon name="refresh" className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    Este mensaje se usará como plantilla cuando los usuarios contacten por WhatsApp. 
+                                    Si no escribes nada, se usará un mensaje genérico por defecto.
+                                </p>
+                                {errors.whatsapp_message && (
+                                    <p className="text-sm text-red-500 mt-1">{errors.whatsapp_message}</p>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
@@ -446,6 +695,10 @@ export default function EditProperty({ property }: EditPropertyProps) {
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
+                            {/* ALERTA DE ADVERTENCIA */}
+                            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 rounded mb-2 text-sm">
+                                <strong>Advertencia:</strong> Cada imagen debe ser inferior a 2MB.
+                            </div>
                             <div className="flex items-center gap-4">
                                 <Button
                                     type="button"
@@ -457,7 +710,7 @@ export default function EditProperty({ property }: EditPropertyProps) {
                                     Agregar Imágenes
                                 </Button>
                                 <span className="text-sm text-muted-foreground">
-                                    {getRemainingImages() > 0 
+                                    {getRemainingImages() > 0
                                         ? `Puedes agregar hasta ${getRemainingImages()} imágenes más`
                                         : 'Límite de imágenes alcanzado'
                                     }
@@ -477,7 +730,7 @@ export default function EditProperty({ property }: EditPropertyProps) {
                             {/* Información sobre la selección múltiple */}
                             <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
                                 <p className="text-sm text-blue-700 dark:text-blue-300">
-                                    <strong>Tip:</strong> También puedes usar Ctrl+Click para seleccionar múltiples imágenes de una vez, 
+                                    <strong>Tip:</strong> También puedes usar Ctrl+Click para seleccionar múltiples imágenes de una vez,
                                     o arrastrar y soltar varias imágenes sobre el botón "Agregar Imágenes".
                                 </p>
                             </div>
@@ -487,6 +740,15 @@ export default function EditProperty({ property }: EditPropertyProps) {
                                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                                     <span className="ml-2 text-sm text-muted-foreground">Generando previsualizaciones...</span>
                                 </div>
+                            )}
+
+                            {/* Validación de nuevas imágenes adicionales */}
+                            {data.additional_images.length > 0 && (
+                                <ImageValidator
+                                    files={data.additional_images}
+                                    maxSizeKB={2048}
+                                    maxFiles={20}
+                                />
                             )}
 
                             {errors.additional_images && (

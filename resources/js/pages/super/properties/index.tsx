@@ -34,6 +34,7 @@ interface Property {
     modality: 'rent' | 'sale';
     currency: 'ars' | 'dollar';
     price: string | number;
+    status: 'available' | 'unavailable';
     amenities: string[];
     cover_image: string;
     user: {
@@ -70,6 +71,14 @@ export default function Properties({ properties }: PropertiesProps) {
 
     const getCurrencyLabel = (currency: string) => {
         return currency === 'ars' ? 'ARS' : 'USD';
+    };
+
+    const getStatusLabel = (status: string) => {
+        return status === 'available' ? 'Disponible' : 'No Disponible';
+    };
+
+    const getStatusVariant = (status: string) => {
+        return status === 'available' ? 'default' : 'secondary';
     };
 
     const formatPrice = (price: string | number, currency: string) => {
@@ -118,8 +127,8 @@ export default function Properties({ properties }: PropertiesProps) {
                                         <TableHead>Dirección</TableHead>
                                         <TableHead>Modalidad</TableHead>
                                         <TableHead>Precio</TableHead>
+                                        <TableHead>Estado</TableHead>
                                         <TableHead>Amenities</TableHead>
-                                        <TableHead>Usuario</TableHead>
                                         <TableHead>Fecha</TableHead>
                                         <TableHead>Acciones</TableHead>
                                     </TableRow>
@@ -158,6 +167,11 @@ export default function Properties({ properties }: PropertiesProps) {
                                                 </div>
                                             </TableCell>
                                             <TableCell>
+                                                <Badge variant={getStatusVariant(property.status)}>
+                                                    {getStatusLabel(property.status)}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
                                                 <div className="flex flex-wrap gap-1 max-w-xs">
                                                     {property.amenities.slice(0, 3).map((amenity, index) => (
                                                         <Badge key={index} variant="outline" className="text-xs">
@@ -170,9 +184,6 @@ export default function Properties({ properties }: PropertiesProps) {
                                                         </Badge>
                                                     )}
                                                 </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="text-sm">{property.user.name}</div>
                                             </TableCell>
                                             <TableCell>
                                                 <div className="text-sm text-muted-foreground">
