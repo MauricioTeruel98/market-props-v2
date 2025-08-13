@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Icon } from "@/components/icon";
+import { PropertyMapEditor } from "@/components/ui/property-map-editor";
+import { ImageValidator, useImageValidation } from "@/components/ui/image-validator";
 import { useState, useRef } from "react";
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -44,10 +46,16 @@ export default function CreateProperty() {
     const [additionalPreviews, setAdditionalPreviews] = useState<string[]>([]);
     const [isLoadingPreviews, setIsLoadingPreviews] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    
+    // Hook para validación de imágenes
+    const { validateFiles: validateCoverImage } = useImageValidation(2048);
+    const { validateFiles: validateAdditionalImages } = useImageValidation(2048);
 
     const { data, setData, post, processing, errors } = useForm({
         title: '',
         address: '',
+        latitude: '',
+        longitude: '',
         modality: '',
         currency: '',
         price: '',
@@ -59,6 +67,14 @@ export default function CreateProperty() {
     const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            // Validar la imagen antes de procesarla
+            const validation = validateCoverImage([file]);
+            if (!validation.isValid) {
+                // Si hay errores de validación, no procesar la imagen
+                e.target.value = '';
+                return;
+            }
+            
             setData('cover_image', file);
             const reader = new FileReader();
             reader.onload = (e) => setCoverPreview(e.target?.result as string);
@@ -75,8 +91,27 @@ export default function CreateProperty() {
             return;
         }
         
-        // Agregar nuevas imágenes a las existentes
-        const newFiles = [...data.additional_images, ...files];
+        // Validar las nuevas imágenes antes de procesarlas
+        const validation = validateAdditionalImages(files);
+        if (!validation.isValid) {
+            // Si hay errores de validación, no procesar las imágenes
+            e.target.value = '';
+            return;
+        }
+        
+        // Filtrar solo las imágenes válidas
+        const validFiles = files.filter(file => {
+            const fileSizeKB = file.size / 1024;
+            return file.type.startsWith('image/') && fileSizeKB <= 2048;
+        });
+        
+        if (validFiles.length !== files.length) {
+            const invalidCount = files.length - validFiles.length;
+            alert(`${invalidCount} imagen(es) no cumplen con los requisitos y no serán procesadas.`);
+        }
+        
+        // Agregar solo las imágenes válidas
+        const newFiles = [...data.additional_images, ...validFiles];
         setData('additional_images', newFiles);
         
         // Mostrar indicador de carga
@@ -134,6 +169,11 @@ export default function CreateProperty() {
         }
     };
 
+    const handleLocationChange = (latitude: number | null, longitude: number | null) => {
+        setData('latitude', latitude?.toString() || '');
+        setData('longitude', longitude?.toString() || '');
+    };
+
     const handleAmenityChange = (amenity: string, checked: boolean) => {
         if (checked) {
             setData('amenities', [...data.amenities, amenity]);
@@ -144,6 +184,32 @@ export default function CreateProperty() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Limpiar coordenadas vacías antes de enviar
+        const formData = { ...data };
+        if (formData.latitude === '') {
+            formData.latitude = '';
+        }
+        if (formData.longitude === '') {
+            formData.longitude = '';
+        }
+        
+        // Actualizar el formulario con los datos limpios
+        setData('latitude', formData.latitude);
+        setData('longitude', formData.longitude);
+        
+        // Debug: mostrar datos que se van a enviar
+        console.log('Datos a enviar:', {
+            title: data.title,
+            address: data.address,
+            latitude: data.latitude,
+            longitude: data.longitude,
+            modality: data.modality,
+            currency: data.currency,
+            price: data.price,
+            amenities: data.amenities
+        });
+        
         post('/admin/properties');
     };
 
@@ -275,6 +341,10 @@ export default function CreateProperty() {
                                 <CardTitle>Imagen de Portada *</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
+                                {/* ALERTA DE ADVERTENCIA */}
+                                <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 rounded mb-2 text-sm">
+                                    <strong>Advertencia:</strong> La imagen debe ser inferior a 2MB.
+                                </div>
                                 <div>
                                     <Label htmlFor="cover_image">Seleccionar imagen</Label>
                                     <Input
@@ -288,6 +358,15 @@ export default function CreateProperty() {
                                         <p className="text-sm text-red-500 mt-1">{errors.cover_image}</p>
                                     )}
                                 </div>
+
+                                {/* Validación de imagen de portada */}
+                                {data.cover_image && (
+                                    <ImageValidator 
+                                        files={[data.cover_image]} 
+                                        maxSizeKB={2048}
+                                        maxFiles={1}
+                                    />
+                                )}
 
                                 {coverPreview && (
                                     <div className="relative">
@@ -313,6 +392,21 @@ export default function CreateProperty() {
                             </CardContent>
                         </Card>
                     </div>
+
+                    {/* Editor de ubicación en el mapa */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Ubicación en el Mapa</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <PropertyMapEditor
+                                initialLatitude={null}
+                                initialLongitude={null}
+                                onLocationChange={handleLocationChange}
+                                height="400px"
+                            />
+                        </CardContent>
+                    </Card>
 
                     {/* Amenities */}
                     <Card>
@@ -348,6 +442,10 @@ export default function CreateProperty() {
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
+                            {/* ALERTA DE ADVERTENCIA */}
+                            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 rounded mb-2 text-sm">
+                                <strong>Advertencia:</strong> Cada imagen debe ser inferior a 2MB.
+                            </div>
                             <div className="flex items-center gap-4">
                                 <Button
                                     type="button"
@@ -391,6 +489,15 @@ export default function CreateProperty() {
                                 </div>
                             )}
 
+                            {/* Validación de imágenes adicionales */}
+                            {data.additional_images.length > 0 && (
+                                <ImageValidator 
+                                    files={data.additional_images} 
+                                    maxSizeKB={2048}
+                                    maxFiles={20}
+                                />
+                            )}
+
                             {errors.additional_images && (
                                 <p className="text-sm text-red-500 mt-1">{errors.additional_images}</p>
                             )}
@@ -429,6 +536,10 @@ export default function CreateProperty() {
                             )}
                         </CardContent>
                     </Card>
+
+                    {/* Campos ocultos para coordenadas */}
+                    <input type="hidden" name="latitude" value={data.latitude} />
+                    <input type="hidden" name="longitude" value={data.longitude} />
 
                     {/* Botones de acción */}
                     <div className="flex justify-end space-x-4">

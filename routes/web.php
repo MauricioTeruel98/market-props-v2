@@ -4,11 +4,53 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\admin\PropertiesController as AdminPropertiesController;
 use App\Http\Controllers\super\PropertiesController as SuperPropertiesController;
+use App\Http\Controllers\Public\PropertiesController as PublicPropertiesController;
 use App\Http\Middleware\EnsureSuperadmin;
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    $featuredProperties = App\Models\Property::with(['user'])
+        ->orderBy('created_at', 'desc')
+        ->limit(6)
+        ->get();
+    
+    // Obtener todas las propiedades con coordenadas para el mapa
+    $allProperties = App\Models\Property::with(['user', 'images'])
+        ->select('id', 'title', 'address', 'latitude', 'longitude', 'modality', 'currency', 'price', 'amenities')
+        ->whereNotNull('latitude')
+        ->whereNotNull('longitude')
+        ->where('latitude', '!=', '')
+        ->where('longitude', '!=', '')
+        ->get()
+        ->map(function ($property) {
+            // Obtener la imagen de portada
+            $coverImage = $property->images->where('is_cover', true)->first();
+            $coverImagePath = $coverImage ? $coverImage->image_path : null;
+            
+            return [
+                'id' => $property->id,
+                'title' => $property->title,
+                'address' => $property->address,
+                'lat' => (float) $property->latitude,
+                'lng' => (float) $property->longitude,
+                'modality' => $property->modality,
+                'currency' => $property->currency,
+                'price' => $property->price,
+                'cover_image' => $coverImagePath,
+                'user' => [
+                    'name' => $property->user->name ?? 'Propietario'
+                ],
+            ];
+        });
+    
+    return Inertia::render('public/landing', [
+        'featuredProperties' => $featuredProperties,
+        'mapProperties' => $allProperties
+    ]);
 })->name('home');
+
+// Rutas públicas para propiedades
+Route::get('/public/properties', [PublicPropertiesController::class, 'index'])->name('public.properties.index');
+Route::get('/public/properties/{property}', [PublicPropertiesController::class, 'show'])->name('public.properties.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {

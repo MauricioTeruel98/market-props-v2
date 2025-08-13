@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\CoordinateHelper;
 use App\Models\Property;
 use App\Models\PropertyImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -69,9 +71,14 @@ class PropertiesController extends Controller
 
     public function store(Request $request)
     {
+        // Log para debuggear
+        \Log::info('Datos recibidos en store:', $request->all());
+        
         $request->validate([
             'title' => 'required|string|max:255',
             'address' => 'required|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'modality' => 'required|in:rent,sale',
             'currency' => 'required|in:ars,dollar',
             'price' => 'required|numeric|min:0',
@@ -83,10 +90,20 @@ class PropertiesController extends Controller
 
         $userId = auth()->id();
         
+        // Log para debuggear coordenadas
+        Log::info('Coordenadas a guardar:', [
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'latitude_float' => $request->latitude ? (float) $request->latitude : null,
+            'longitude_float' => $request->longitude ? (float) $request->longitude : null,
+        ]);
+        
         // Crear la propiedad primero para obtener el ID
         $property = Property::create([
             'title' => $request->title,
             'address' => $request->address,
+            'latitude' => CoordinateHelper::roundCoordinate($request->latitude ? (float) $request->latitude : null),
+            'longitude' => CoordinateHelper::roundCoordinate($request->longitude ? (float) $request->longitude : null),
             'modality' => $request->modality,
             'currency' => $request->currency,
             'price' => $request->price,
@@ -143,6 +160,8 @@ class PropertiesController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'address' => 'required|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'modality' => 'required|in:rent,sale',
             'currency' => 'required|in:ars,dollar',
             'price' => 'required|numeric|min:0',
@@ -165,6 +184,8 @@ class PropertiesController extends Controller
         $data = [
             'title' => $request->title,
             'address' => $request->address,
+            'latitude' => CoordinateHelper::roundCoordinate(!empty($request->latitude) ? (float) $request->latitude : null),
+            'longitude' => CoordinateHelper::roundCoordinate(!empty($request->longitude) ? (float) $request->longitude : null),
             'modality' => $request->modality,
             'currency' => $request->currency,
             'price' => $request->price,
