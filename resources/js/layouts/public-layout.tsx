@@ -36,7 +36,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                                     asChild
                                     className="bg-sky-400 hover:bg-sky-500 text-sky-900 font-semibold px-3 py-2 rounded-md text-sm transition-colors"
                                 >
-                                    <a>Publica</a>
+                                    <a>Publicar</a>
                                 </Button>
                             </Link>
                         </nav>
@@ -78,7 +78,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                                                 asChild
                                                 className="bg-sky-400 hover:bg-sky-500 text-sky-900 font-semibold px-3 mx-3 py-2 rounded-md text-base transition-colors"
                                             >
-                                                <a>Publica</a>
+                                                <a>Publicar</a>
                                             </Button>
                                         </Link>
                                     </nav>

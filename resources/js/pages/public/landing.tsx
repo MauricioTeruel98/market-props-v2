@@ -62,7 +62,7 @@ export default function Landing({ featuredProperties = [] }: LandingProps) {
                                     Buscar Propiedades
                                 </Button>
                             </Link>
-                            <Link href="/auth/register">
+                            <Link href="/register">
                                 <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-sky-600 transition-colors">
                                     <Icon name="user-plus" className="mr-2 h-5 w-5" />
                                     Registrarse
