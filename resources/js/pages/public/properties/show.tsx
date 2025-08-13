@@ -276,7 +276,7 @@ export default function PropertyShow({ property, relatedProperties }: PropertySh
                                                     className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold transition-colors"
                                                     onClick={() => {
                                                         const message = property.whatsapp_message || "Hola! Me interesa esta propiedad. ¿Podrías darme más información?";
-                                                        const whatsappUrl = `https://wa.me/${property.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+                                                        const whatsappUrl = `https://wa.me/${(property.whatsapp ?? '').replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
                                                         window.open(whatsappUrl, '_blank');
                                                     }}
                                                 >
@@ -340,7 +340,7 @@ export default function PropertyShow({ property, relatedProperties }: PropertySh
                                             className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold transition-colors"
                                             onClick={() => {
                                                 const message = property.whatsapp_message || "Hola! Me interesa esta propiedad. ¿Podrías darme más información?";
-                                                const whatsappUrl = `https://wa.me/${property.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+                                                const whatsappUrl = `https://wa.me/${(property.whatsapp ?? '').replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
                                                 window.open(whatsappUrl, '_blank');
                                             }}
                                         >

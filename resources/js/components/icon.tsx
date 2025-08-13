@@ -5,7 +5,8 @@ import {
     Edit, 
     Trash, 
     ArrowLeft, 
-    X 
+    X,
+    ChevronUp
 } from 'lucide-react';
 
 interface IconProps {
@@ -20,6 +21,7 @@ const iconMap = {
     'trash': Trash,
     'arrow-left': ArrowLeft,
     'x': X,
+    'chevron-up': ChevronUp,
 };
 
 export function Icon({ name, className, ...props }: IconProps) {

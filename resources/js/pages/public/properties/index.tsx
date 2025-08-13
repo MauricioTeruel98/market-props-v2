@@ -377,7 +377,7 @@ export default function PropertiesIndex({ properties, filters: initialFilters = 
                             <>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
                                     {properties.data.map((property) => (
-                                        <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-gray-900 border-gray-800">
+                                        <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-gray-900 border-gray-800 pt-0">
                                             <div className="aspect-video overflow-hidden">
                                                 <img
                                                     src={`/storage/${property.cover_image}`}
