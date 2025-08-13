@@ -173,7 +173,7 @@ export default function Landing({ featuredProperties = [], mapProperties = [] }:
                         
                         <div className="grid md:grid-cols-3 gap-8">
                             {featuredProperties.map((property) => (
-                                <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-gray-900 border-gray-800">
+                                <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-gray-900 border-gray-800 pt-0">
                                     <div className="aspect-video overflow-hidden">
                                         <img
                                             src={`/storage/${property.cover_image}`}
