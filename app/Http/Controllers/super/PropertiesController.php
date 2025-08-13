@@ -91,6 +91,7 @@ class PropertiesController extends Controller
             'modality' => 'required|in:rent,sale',
             'currency' => 'required|in:ars,dollar',
             'price' => 'required|numeric|min:0',
+            'status' => 'required|in:available,unavailable',
             'amenities' => 'array',
             'cover_image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'additional_images' => 'array|max:20',
@@ -106,6 +107,7 @@ class PropertiesController extends Controller
             'modality' => $request->modality,
             'currency' => $request->currency,
             'price' => $request->price,
+            'status' => $request->status,
             'amenities' => $request->amenities ?? [],
             'cover_image' => '', // Temporal, se actualizará después
             'user_id' => $userId,
@@ -156,6 +158,7 @@ class PropertiesController extends Controller
             'modality' => 'required|in:rent,sale',
             'currency' => 'required|in:ars,dollar',
             'price' => 'required|numeric|min:0',
+            'status' => 'required|in:available,unavailable',
             'amenities' => 'array',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'additional_images' => 'array|max:20',
@@ -178,6 +181,7 @@ class PropertiesController extends Controller
             'modality' => $request->modality,
             'currency' => $request->currency,
             'price' => $request->price,
+            'status' => $request->status,
             'amenities' => $request->amenities ?? [],
         ];
 

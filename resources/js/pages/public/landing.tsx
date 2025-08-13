@@ -45,7 +45,7 @@ export default function Landing({ featuredProperties = [], mapProperties = [] }:
 
     return (
         <PublicLayout>
-            <Head title="Market Props - Encuentra tu propiedad ideal" />
+            <Head title="Urbani - Encuentra tu propiedad ideal" />
             
             {/* Hero Section */}
             <section className="bg-gradient-to-r from-sky-400 to-blue-500 text-white">
@@ -76,11 +76,11 @@ export default function Landing({ featuredProperties = [], mapProperties = [] }:
             </section>
 
             {/* Features Section */}
-            <section className="py-20 bg-gray-900">
+            {/* <section className="py-20 bg-gray-900">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl font-bold text-white mb-4">
-                            ¿Por qué elegir Market Props?
+                            ¿Por qué elegir Urbani?
                         </h2>
                         <p className="text-xl text-gray-300">
                             Te ofrecemos la mejor experiencia para encontrar tu hogar ideal
@@ -113,7 +113,7 @@ export default function Landing({ featuredProperties = [], mapProperties = [] }:
                         </div>
                     </div>
                 </div>
-            </section>
+            </section> */}
 
             {/* Mapa de Propiedades */}
             {mapProperties.length > 0 && (
@@ -121,10 +121,10 @@ export default function Landing({ featuredProperties = [], mapProperties = [] }:
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="text-center mb-16">
                             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                                Explora Propiedades en el Mapa
+                                Explora por el Mapa
                             </h2>
                             <p className="text-xl text-gray-600">
-                                Visualiza todas nuestras propiedades disponibles en su ubicación exacta
+                                Visualiza todas las propiedades disponibles en su ubicación exacta
                             </p>
                         </div>
                         

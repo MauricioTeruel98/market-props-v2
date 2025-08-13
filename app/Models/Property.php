@@ -22,6 +22,11 @@ class Property extends Model
         'amenities',
         'cover_image',
         'user_id',
+        'whatsapp',
+        'facebook_messenger',
+        'contact_email',
+        'whatsapp_message',
+        'status',
     ];
 
     protected $casts = [
@@ -29,6 +34,7 @@ class Property extends Model
         'price' => 'decimal:2',
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
+        'status' => 'string',
     ];
 
     public function user(): BelongsTo
@@ -49,6 +55,11 @@ class Property extends Model
     public function getCurrencyLabelAttribute(): string
     {
         return $this->currency === 'ars' ? 'ARS' : 'USD';
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return $this->status === 'available' ? 'Disponible' : 'No Disponible';
     }
 
     public function getFormattedPriceAttribute(): string

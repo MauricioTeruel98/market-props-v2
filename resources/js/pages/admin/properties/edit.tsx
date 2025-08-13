@@ -11,6 +11,7 @@ import { Icon } from "@/components/icon";
 import { PropertyMapEditor } from "@/components/ui/property-map-editor";
 import { ImageValidator, useImageValidation } from "@/components/ui/image-validator";
 import { useState, useEffect, useRef } from "react";
+import { Textarea } from "@/components/ui/textarea";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -50,19 +51,30 @@ interface Property {
     modality: 'rent' | 'sale';
     currency: 'ars' | 'dollar';
     price: number;
+    status: 'available' | 'unavailable';
     amenities: string[];
     cover_image: string;
     images: Array<{
         id: number;
         image_path: string;
     }>;
+    whatsapp?: string;
+    facebook_messenger?: string;
+    contact_email?: string;
+    whatsapp_message?: string;
 }
 
 interface EditPropertyProps {
     property: Property;
+    user: {
+        whatsapp?: string;
+        facebook?: string;
+        facebook_messenger?: string;
+        email?: string;
+    };
 }
 
-export default function EditProperty({ property }: EditPropertyProps) {
+export default function EditProperty({ property, user }: EditPropertyProps) {
     const [coverPreview, setCoverPreview] = useState<string | null>(null);
     const [additionalPreviews, setAdditionalPreviews] = useState<string[]>([]);
     const [existingImages, setExistingImages] = useState(property.images);
@@ -81,9 +93,14 @@ export default function EditProperty({ property }: EditPropertyProps) {
         modality: property.modality,
         currency: property.currency,
         price: property.price.toString(),
+        status: property.status,
         amenities: property.amenities,
         cover_image: null as File | null,
         additional_images: [] as File[],
+        whatsapp: property.whatsapp || '',
+        facebook_messenger: property.facebook_messenger || '',
+        contact_email: property.contact_email || '',
+        whatsapp_message: property.whatsapp_message || '',
         _method: 'PUT',
     });
 
@@ -268,6 +285,37 @@ export default function EditProperty({ property }: EditPropertyProps) {
         return Math.max(0, 20 - (existingImages.length + data.additional_images.length));
     };
 
+    // Función para convertir URL de Facebook a Messenger
+    const convertFacebookToMessenger = (facebookUrl: string): string => {
+        if (!facebookUrl) return '';
+        
+        // Extraer el nombre de usuario de la URL de Facebook
+        const match = facebookUrl.match(/facebook\.com\/([^/?]+)/);
+        if (match) {
+            const username = match[1].split('?')[0]; // Remover parámetros adicionales
+            return `https://m.me/${username}`;
+        }
+        
+        return facebookUrl; // Si no se puede convertir, devolver la URL original
+    };
+
+    // Función para regenerar URL de Messenger
+    const regenerateMessengerUrl = () => {
+        if (user.facebook) {
+            const messengerUrl = convertFacebookToMessenger(user.facebook);
+            setData('facebook_messenger', messengerUrl);
+        }
+    };
+
+    // Función para restaurar mensaje genérico de WhatsApp
+    const restoreDefaultWhatsAppMessage = () => {
+        const defaultMessage = "Hola! Me interesa esta propiedad. ¿Podrías darme más información sobre disponibilidad, horarios de visita y cualquier detalle adicional que consideres importante?";
+        setData('whatsapp_message', defaultMessage);
+    };
+
+    // Mensaje genérico por defecto
+    const defaultWhatsAppMessage = "Hola! Me interesa esta propiedad. ¿Podrías darme más información sobre disponibilidad, horarios de visita y cualquier detalle adicional que consideres importante?";
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Editar Propiedad" />
@@ -370,6 +418,22 @@ export default function EditProperty({ property }: EditPropertyProps) {
                                     />
                                     {errors.price && (
                                         <p className="text-sm text-red-500 mt-1">{errors.price}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="status">Estado *</Label>
+                                    <Select value={data.status} onValueChange={(value) => setData('status', value)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Seleccionar estado" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="available">Disponible</SelectItem>
+                                            <SelectItem value="unavailable">No Disponible</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.status && (
+                                        <p className="text-sm text-red-500 mt-1">{errors.status}</p>
                                     )}
                                 </div>
                             </CardContent>
@@ -479,6 +543,106 @@ export default function EditProperty({ property }: EditPropertyProps) {
                                         </Label>
                                     </div>
                                 ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Campos de Contacto */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Información de Contacto</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="whatsapp">WhatsApp</Label>
+                                    <Input
+                                        id="whatsapp"
+                                        value={data.whatsapp}
+                                        onChange={(e) => setData('whatsapp', e.target.value)}
+                                        placeholder="Ej: +54 9 11 1234-5678"
+                                        className={errors.whatsapp ? 'border-red-500' : ''}
+                                    />
+                                    {errors.whatsapp && (
+                                        <p className="text-sm text-red-500 mt-1">{errors.whatsapp}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="facebook_messenger">Facebook Messenger</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            id="facebook_messenger"
+                                            value={data.facebook_messenger}
+                                            onChange={(e) => setData('facebook_messenger', e.target.value)}
+                                            placeholder="Ej: https://m.me/tu.usuario"
+                                            className={errors.facebook_messenger ? 'border-red-500' : ''}
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={regenerateMessengerUrl}
+                                            disabled={!user.facebook}
+                                        >
+                                            <Icon name="refresh" className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        {user.facebook 
+                                            ? `Se generó automáticamente desde tu Facebook: ${user.facebook}`
+                                            : 'Configura tu Facebook en tu perfil para generar automáticamente la URL de Messenger'
+                                        }
+                                    </p>
+                                    {errors.facebook_messenger && (
+                                        <p className="text-sm text-red-500 mt-1">{errors.facebook_messenger}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="contact_email">Email de Contacto</Label>
+                                <Input
+                                    id="contact_email"
+                                    type="email"
+                                    value={data.contact_email}
+                                    onChange={(e) => setData('contact_email', e.target.value)}
+                                    placeholder="Ej: contacto@ejemplo.com"
+                                    className={errors.contact_email ? 'border-red-500' : ''}
+                                />
+                                {errors.contact_email && (
+                                    <p className="text-sm text-red-500 mt-1">{errors.contact_email}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <Label htmlFor="whatsapp_message">Mensaje Predeterminado de WhatsApp</Label>
+                                <div className="flex items-center gap-2">
+                                    <Textarea
+                                        id="whatsapp_message"
+                                        value={data.whatsapp_message || defaultWhatsAppMessage}
+                                        onChange={(e) => setData('whatsapp_message', e.target.value)}
+                                        placeholder="Ej: Hola! Me interesa esta propiedad. ¿Podrías darme más información?"
+                                        className={errors.whatsapp_message ? 'border-red-500' : ''}
+                                        rows={3}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={restoreDefaultWhatsAppMessage}
+                                        title="Restaurar mensaje por defecto"
+                                    >
+                                        <Icon name="refresh" className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    Este mensaje se usará como plantilla cuando los usuarios contacten por WhatsApp. 
+                                    Si no escribes nada, se usará un mensaje genérico por defecto.
+                                </p>
+                                {errors.whatsapp_message && (
+                                    <p className="text-sm text-red-500 mt-1">{errors.whatsapp_message}</p>
+                                )}
                             </div>
                         </CardContent>
                     </Card>

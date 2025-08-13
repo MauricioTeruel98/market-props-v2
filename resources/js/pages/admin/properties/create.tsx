@@ -10,7 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Icon } from "@/components/icon";
 import { PropertyMapEditor } from "@/components/ui/property-map-editor";
 import { ImageValidator, useImageValidation } from "@/components/ui/image-validator";
-import { useState, useRef } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { useState, useRef, useEffect } from "react";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -41,7 +42,16 @@ const amenitiesList = [
     'Mascotas permitidas',
 ];
 
-export default function CreateProperty() {
+interface CreatePropertyProps {
+    user: {
+        whatsapp?: string;
+        facebook?: string;
+        facebook_messenger?: string;
+        email?: string;
+    };
+}
+
+export default function CreateProperty({ user }: CreatePropertyProps) {
     const [coverPreview, setCoverPreview] = useState<string | null>(null);
     const [additionalPreviews, setAdditionalPreviews] = useState<string[]>([]);
     const [isLoadingPreviews, setIsLoadingPreviews] = useState(false);
@@ -59,10 +69,66 @@ export default function CreateProperty() {
         modality: '',
         currency: '',
         price: '',
+        status: 'available',
         amenities: [] as string[],
         cover_image: null as File | null,
         additional_images: [] as File[],
+        whatsapp: '',
+        facebook_messenger: '',
+        contact_email: '',
+        whatsapp_message: '',
     });
+
+    // Autocompletar campos de contacto con la información del usuario
+    useEffect(() => {
+        if (user) {
+            if (user.whatsapp) setData('whatsapp', user.whatsapp);
+            if (user.facebook_messenger) setData('facebook_messenger', user.facebook_messenger);
+            if (user.email) setData('contact_email', user.email);
+        }
+    }, [user]);
+
+    // Verificar si faltan campos de contacto
+    const missingContactFields = () => {
+        const fields = [];
+        if (!user.whatsapp) fields.push('WhatsApp');
+        if (!user.facebook) fields.push('Facebook');
+        if (!user.email) fields.push('Email');
+        return fields;
+    };
+
+    const hasMissingContactFields = missingContactFields().length > 0;
+
+    // Función para convertir URL de Facebook a Messenger
+    const convertFacebookToMessenger = (facebookUrl: string): string => {
+        if (!facebookUrl) return '';
+        
+        // Extraer el nombre de usuario de la URL de Facebook
+        const match = facebookUrl.match(/facebook\.com\/([^/?]+)/);
+        if (match) {
+            const username = match[1].split('?')[0]; // Remover parámetros adicionales
+            return `https://m.me/${username}`;
+        }
+        
+        return facebookUrl; // Si no se puede convertir, devolver la URL original
+    };
+
+    // Función para regenerar URL de Messenger
+    const regenerateMessengerUrl = () => {
+        if (user.facebook) {
+            const messengerUrl = convertFacebookToMessenger(user.facebook);
+            setData('facebook_messenger', messengerUrl);
+        }
+    };
+
+    // Función para restaurar mensaje genérico de WhatsApp
+    const restoreDefaultWhatsAppMessage = () => {
+        const defaultMessage = "Hola! Me interesa esta propiedad. ¿Podrías darme más información sobre disponibilidad, horarios de visita y cualquier detalle adicional que consideres importante?";
+        setData('whatsapp_message', defaultMessage);
+    };
+
+    // Mensaje genérico por defecto
+    const defaultWhatsAppMessage = "Hola! Me interesa esta propiedad. ¿Podrías darme más información sobre disponibilidad, horarios de visita y cualquier detalle adicional que consideres importante?";
 
     const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -332,6 +398,22 @@ export default function CreateProperty() {
                                         <p className="text-sm text-red-500 mt-1">{errors.price}</p>
                                     )}
                                 </div>
+
+                                <div>
+                                    <Label htmlFor="status">Estado *</Label>
+                                    <Select value={data.status} onValueChange={(value) => setData('status', value)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Seleccionar estado" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="available">Disponible</SelectItem>
+                                            <SelectItem value="unavailable">No Disponible</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.status && (
+                                        <p className="text-sm text-red-500 mt-1">{errors.status}</p>
+                                    )}
+                                </div>
                             </CardContent>
                         </Card>
 
@@ -429,6 +511,119 @@ export default function CreateProperty() {
                                         </Label>
                                     </div>
                                 ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Campos de Contacto */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Información de Contacto</CardTitle>
+                            {hasMissingContactFields && (
+                                <div className="bg-blue-50 dark:bg-blue-950 border-l-4 border-blue-500 text-blue-700 dark:text-blue-300 p-3 rounded text-sm">
+                                    <p className="font-medium mb-2">Campos faltantes en tu perfil:</p>
+                                    <ul className="list-disc list-inside mb-3">
+                                        {missingContactFields().map(field => (
+                                            <li key={field}>{field}</li>
+                                        ))}
+                                    </ul>
+                                    <Link href="/settings/profile" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+                                        → Completar mi perfil
+                                    </Link>
+                                </div>
+                            )}
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="whatsapp">WhatsApp</Label>
+                                    <Input
+                                        id="whatsapp"
+                                        value={data.whatsapp}
+                                        onChange={(e) => setData('whatsapp', e.target.value)}
+                                        placeholder="Ej: +54 9 11 1234-5678"
+                                        className={errors.whatsapp ? 'border-red-500' : ''}
+                                    />
+                                    {errors.whatsapp && (
+                                        <p className="text-sm text-red-500 mt-1">{errors.whatsapp}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="facebook_messenger">Facebook Messenger</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            id="facebook_messenger"
+                                            value={data.facebook_messenger}
+                                            onChange={(e) => setData('facebook_messenger', e.target.value)}
+                                            placeholder="Ej: https://m.me/tu.usuario"
+                                            className={errors.facebook_messenger ? 'border-red-500' : ''}
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={regenerateMessengerUrl}
+                                            disabled={!user.facebook}
+                                        >
+                                            <Icon name="refresh" className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        {user.facebook 
+                                            ? `Se generó automáticamente desde tu Facebook: ${user.facebook}`
+                                            : 'Configura tu Facebook en tu perfil para generar automáticamente la URL de Messenger'
+                                        }
+                                    </p>
+                                    {errors.facebook_messenger && (
+                                        <p className="text-sm text-red-500 mt-1">{errors.facebook_messenger}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="contact_email">Email de Contacto</Label>
+                                <Input
+                                    id="contact_email"
+                                    type="email"
+                                    value={data.contact_email}
+                                    onChange={(e) => setData('contact_email', e.target.value)}
+                                    placeholder="Ej: contacto@ejemplo.com"
+                                    className={errors.contact_email ? 'border-red-500' : ''}
+                                />
+                                {errors.contact_email && (
+                                    <p className="text-sm text-red-500 mt-1">{errors.contact_email}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <Label htmlFor="whatsapp_message">Mensaje Predeterminado de WhatsApp</Label>
+                                <div className="flex items-center gap-2">
+                                    <Textarea
+                                        id="whatsapp_message"
+                                        value={data.whatsapp_message || defaultWhatsAppMessage}
+                                        onChange={(e) => setData('whatsapp_message', e.target.value)}
+                                        placeholder="Ej: Hola! Me interesa esta propiedad. ¿Podrías darme más información?"
+                                        className={errors.whatsapp_message ? 'border-red-500' : ''}
+                                        rows={3}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={restoreDefaultWhatsAppMessage}
+                                        title="Restaurar mensaje por defecto"
+                                    >
+                                        <Icon name="refresh" className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    Este mensaje se usará como plantilla cuando los usuarios contacten por WhatsApp. 
+                                    Si no escribes nada, se usará un mensaje genérico por defecto.
+                                </p>
+                                {errors.whatsapp_message && (
+                                    <p className="text-sm text-red-500 mt-1">{errors.whatsapp_message}</p>
+                                )}
                             </div>
                         </CardContent>
                     </Card>

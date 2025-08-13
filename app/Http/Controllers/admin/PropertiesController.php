@@ -4,6 +4,7 @@ namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use App\Helpers\CoordinateHelper;
+use App\Helpers\FacebookHelper;
 use App\Models\Property;
 use App\Models\PropertyImage;
 use Illuminate\Http\Request;
@@ -66,7 +67,22 @@ class PropertiesController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('admin/properties/create');
+        $user = auth()->user();
+        
+        // Generar URL de Messenger a partir de la URL de Facebook
+        $facebookMessenger = null;
+        if ($user->facebook) {
+            $facebookMessenger = FacebookHelper::toMessenger($user->facebook);
+        }
+        
+        return Inertia::render('admin/properties/create', [
+            'user' => [
+                'whatsapp' => $user->whatsapp,
+                'facebook' => $user->facebook,
+                'facebook_messenger' => $facebookMessenger,
+                'email' => $user->email,
+            ],
+        ]);
     }
 
     public function store(Request $request)
@@ -82,10 +98,15 @@ class PropertiesController extends Controller
             'modality' => 'required|in:rent,sale',
             'currency' => 'required|in:ars,dollar',
             'price' => 'required|numeric|min:0',
+            'status' => 'required|in:available,unavailable',
             'amenities' => 'array',
             'cover_image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'additional_images' => 'array|max:20',
             'additional_images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'whatsapp' => 'nullable|string|max:255',
+            'facebook_messenger' => 'nullable|string|max:255',
+            'contact_email' => 'nullable|email|max:255',
+            'whatsapp_message' => 'nullable|string|max:1000',
         ]);
 
         $userId = auth()->id();
@@ -107,9 +128,14 @@ class PropertiesController extends Controller
             'modality' => $request->modality,
             'currency' => $request->currency,
             'price' => $request->price,
+            'status' => $request->status,
             'amenities' => $request->amenities ?? [],
             'cover_image' => '', // Temporal, se actualizará después
             'user_id' => $userId,
+            'whatsapp' => $request->whatsapp,
+            'facebook_messenger' => $request->facebook_messenger,
+            'contact_email' => $request->contact_email,
+            'whatsapp_message' => $request->whatsapp_message ?: $this->getDefaultWhatsAppMessage(),
         ]);
 
         // Ahora crear la estructura de carpetas por propiedad
@@ -136,6 +162,14 @@ class PropertiesController extends Controller
         return redirect()->route('admin.properties.index')->with('success', 'Propiedad creada exitosamente');
     }
 
+    /**
+     * Obtener mensaje genérico por defecto para WhatsApp
+     */
+    private function getDefaultWhatsAppMessage(): string
+    {
+        return "Hola! Me interesa esta propiedad. ¿Podrías darme más información sobre disponibilidad, horarios de visita y cualquier detalle adicional que consideres importante?";
+    }
+
     public function edit(Property $property): Response
     {
         // Verificar que la propiedad pertenezca al usuario autenticado
@@ -144,9 +178,22 @@ class PropertiesController extends Controller
         }
 
         $property->load('images');
+        $user = auth()->user();
+        
+        // Generar URL de Messenger a partir de la URL de Facebook
+        $facebookMessenger = null;
+        if ($user->facebook) {
+            $facebookMessenger = FacebookHelper::toMessenger($user->facebook);
+        }
         
         return Inertia::render('admin/properties/edit', [
             'property' => $property,
+            'user' => [
+                'whatsapp' => $user->whatsapp,
+                'facebook' => $user->facebook,
+                'facebook_messenger' => $facebookMessenger,
+                'email' => $user->email,
+            ],
         ]);
     }
 
@@ -165,10 +212,15 @@ class PropertiesController extends Controller
             'modality' => 'required|in:rent,sale',
             'currency' => 'required|in:ars,dollar',
             'price' => 'required|numeric|min:0',
+            'status' => 'required|in:available,unavailable',
             'amenities' => 'array',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'additional_images' => 'array|max:20',
             'additional_images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'whatsapp' => 'nullable|string|max:255',
+            'facebook_messenger' => 'nullable|string|max:255',
+            'contact_email' => 'nullable|email|max:255',
+            'whatsapp_message' => 'nullable|string|max:1000',
         ]);
 
         // Validar que no se exceda el límite de 20 imágenes en total
@@ -189,7 +241,12 @@ class PropertiesController extends Controller
             'modality' => $request->modality,
             'currency' => $request->currency,
             'price' => $request->price,
+            'status' => $request->status,
             'amenities' => $request->amenities ?? [],
+            'whatsapp' => $request->whatsapp,
+            'facebook_messenger' => $request->facebook_messenger,
+            'contact_email' => $request->contact_email,
+            'whatsapp_message' => $request->whatsapp_message ?: $this->getDefaultWhatsAppMessage(),
         ];
 
         if ($request->hasFile('cover_image')) {
