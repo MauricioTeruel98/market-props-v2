@@ -20,7 +20,9 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                     <div className="flex justify-between items-center h-14 sm:h-16">
                         {/* Logo */}
                         <div className="flex items-center">
-                            <Link href="/" className="text-xl sm:text-2xl font-bold text-white">Market Props</Link>
+                            <Link href="/" className="text-xl sm:text-2xl font-bold text-white">
+                                <img src="/assets/logo/Logo_urbani.png" alt="Market Props" className="h-10" />
+                            </Link>
                         </div>
 
                         {/* Desktop Navigation */}

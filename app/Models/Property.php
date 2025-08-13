@@ -14,6 +14,8 @@ class Property extends Model
     protected $fillable = [
         'title',
         'address',
+        'latitude',
+        'longitude',
         'modality',
         'currency',
         'price',
@@ -25,6 +27,8 @@ class Property extends Model
     protected $casts = [
         'amenities' => 'array',
         'price' => 'decimal:2',
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
     ];
 
     public function user(): BelongsTo

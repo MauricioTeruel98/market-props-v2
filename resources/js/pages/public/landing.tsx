@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/icon";
+import { Map, MapLocation } from "@/components/ui/map";
 import PublicLayout from "@/layouts/public-layout";
 
 interface Property {
@@ -21,9 +22,10 @@ interface Property {
 
 interface LandingProps {
     featuredProperties?: Property[];
+    mapProperties?: MapLocation[];
 }
 
-export default function Landing({ featuredProperties = [] }: LandingProps) {
+export default function Landing({ featuredProperties = [], mapProperties = [] }: LandingProps) {
     const getModalityLabel = (modality: string) => {
         return modality === 'rent' ? 'Alquiler' : 'Venta';
     };
@@ -50,7 +52,7 @@ export default function Landing({ featuredProperties = [] }: LandingProps) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
                     <div className="text-center">
                         <h1 className="text-4xl md:text-6xl font-bold mb-6">
-                            Encuentra tu propiedad ideal
+                            Encuentra tu casa o depto ideal
                         </h1>
                         <p className="text-xl md:text-2xl mb-8 text-sky-100">
                             Miles de propiedades en alquiler y venta en toda la ciudad
@@ -112,6 +114,49 @@ export default function Landing({ featuredProperties = [] }: LandingProps) {
                     </div>
                 </div>
             </section>
+
+            {/* Mapa de Propiedades */}
+            {mapProperties.length > 0 && (
+                <section className="py-20 bg-white">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                                Explora Propiedades en el Mapa
+                            </h2>
+                            <p className="text-xl text-gray-600">
+                                Visualiza todas nuestras propiedades disponibles en su ubicación exacta
+                            </p>
+                        </div>
+                        
+                        <div className="bg-gray-50 rounded-xl p-6">
+                            <Map
+                                locations={mapProperties}
+                                center={[-26.8241, -65.2226]} // San Miguel de Tucumán
+                                zoom={12}
+                                height="500px"
+                                interactive={true}
+                                onLocationSelect={(location) => {
+                                    // Redirigir a la página de la propiedad
+                                    if (location.id) {
+                                        window.location.href = `/public/properties/${location.id}`;
+                                    }
+                                }}
+                            />
+                        </div>
+                        
+                        <div className="text-center mt-8">
+                            <p className="text-gray-600 mb-4">
+                                Haz clic en cualquier marcador para ver los detalles de la propiedad
+                            </p>
+                            <Link href="/public/properties">
+                                <Button size="lg" variant="outline" className="border-sky-400 text-sky-400 hover:bg-sky-400 hover:text-sky-50 transition-colors">
+                                    Ver Todas las Propiedades
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+                </section>
+            )}
 
             {/* Featured Properties */}
             {featuredProperties.length > 0 && (
