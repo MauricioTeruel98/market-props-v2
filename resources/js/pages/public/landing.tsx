@@ -76,7 +76,7 @@ export default function Landing({ featuredProperties = [], mapProperties = [] }:
             </section>
 
             {/* Features Section */}
-            <section className="py-20 bg-gray-900">
+            {/* <section className="py-20 bg-gray-900">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl font-bold text-white mb-4">
@@ -113,7 +113,7 @@ export default function Landing({ featuredProperties = [], mapProperties = [] }:
                         </div>
                     </div>
                 </div>
-            </section>
+            </section> */}
 
             {/* Mapa de Propiedades */}
             {mapProperties.length > 0 && (
@@ -121,10 +121,10 @@ export default function Landing({ featuredProperties = [], mapProperties = [] }:
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="text-center mb-16">
                             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                                Explora Propiedades en el Mapa
+                                Explora por el Mapa
                             </h2>
                             <p className="text-xl text-gray-600">
-                                Visualiza todas nuestras propiedades disponibles en su ubicación exacta
+                                Visualiza todas las propiedades disponibles en su ubicación exacta
                             </p>
                         </div>
                         

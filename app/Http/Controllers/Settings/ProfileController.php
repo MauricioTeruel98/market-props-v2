@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,13 +30,38 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $data = $request->validated();
+
+        // Handle avatar upload
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar if exists
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            $data['avatar'] = $avatarPath;
+        }
+
+        // Handle cover image upload
+        if ($request->hasFile('cover_image')) {
+            // Delete old cover image if exists
+            if ($user->cover_image && Storage::disk('public')->exists($user->cover_image)) {
+                Storage::disk('public')->delete($user->cover_image);
+            }
+            
+            $coverPath = $request->file('cover_image')->store('covers', 'public');
+            $data['cover_image'] = $coverPath;
+        }
+
+        $user->fill($data);
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
 
         return to_route('profile.edit');
     }
@@ -50,6 +76,14 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        // Delete user images
+        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+        if ($user->cover_image && Storage::disk('public')->exists($user->cover_image)) {
+            Storage::disk('public')->delete($user->cover_image);
+        }
 
         Auth::logout();
 

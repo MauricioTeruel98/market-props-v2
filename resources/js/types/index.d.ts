@@ -35,7 +35,16 @@ export interface User {
     id: number;
     name: string;
     email: string;
+    role?: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    state?: string;
     avatar?: string;
+    cover_image?: string;
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
