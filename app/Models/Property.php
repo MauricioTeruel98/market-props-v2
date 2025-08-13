@@ -22,6 +22,10 @@ class Property extends Model
         'amenities',
         'cover_image',
         'user_id',
+        'whatsapp',
+        'facebook_messenger',
+        'contact_email',
+        'whatsapp_message',
     ];
 
     protected $casts = [

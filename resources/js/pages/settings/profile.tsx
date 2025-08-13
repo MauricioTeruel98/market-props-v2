@@ -33,6 +33,7 @@ type ProfileForm = {
     facebook: string;
     twitter: string;
     instagram: string;
+    whatsapp: string;
     avatar: File | null;
     cover_image: File | null;
 };
@@ -52,6 +53,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
         facebook: auth.user.facebook || '',
         twitter: auth.user.twitter || '',
         instagram: auth.user.instagram || '',
+        whatsapp: auth.user.whatsapp || '',
         avatar: null,
         cover_image: null,
     });
@@ -246,6 +248,19 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                         placeholder="https://instagram.com/tu-usuario"
                                     />
                                     <InputError className="mt-2" message={errors.instagram} />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="whatsapp">WhatsApp</Label>
+                                    <Input
+                                        id="whatsapp"
+                                        type="tel"
+                                        className="mt-1 block w-full"
+                                        value={data.whatsapp}
+                                        onChange={(e) => setData('whatsapp', e.target.value)}
+                                        placeholder="+54 9 11 1234-5678"
+                                    />
+                                    <InputError className="mt-2" message={errors.whatsapp} />
                                 </div>
                             </CardContent>
                         </Card>
