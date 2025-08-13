@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { MenuIcon } from "lucide-react";
+import { BackToTop } from "@/components/ui/back-to-top";
 
 interface PublicLayoutProps {
     children: React.ReactNode;
@@ -14,13 +15,13 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
     return (
         <>
             {/* Header */}
-            <header className="bg-black shadow-sm border-b border-gray-800">
+            <header className="bg-black shadow-sm border-b border-gray-800 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-14 sm:h-16">
                         {/* Logo */}
                         <div className="flex items-center">
                             <Link href="/" className="text-xl sm:text-2xl font-bold text-white">
-                                <img src="/assets/logo/Logo_urbani.png" alt="Urbani" className="h-10" />
+                                <img src="/assets/logo/Logo.png" alt="Urbani" className="h-10" />
                             </Link>
                         </div>
 
@@ -92,7 +93,8 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                 <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
                         <div>
-                            <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white">Urbani</h3>
+                            {/* <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white">Urbani</h3> */}
+                            <img src="/assets/logo/Logo.png" alt="Urbani" className="h-10 mb-3" />
                             <p className="text-sm sm:text-base text-gray-400">
                                 Tu plataforma confiable para encontrar la propiedad ideal.
                             </p>
@@ -131,6 +133,9 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                     </div>
                 </div>
             </footer>
+            
+            {/* Back to Top Button */}
+            <BackToTop />
         </>
     );
 }

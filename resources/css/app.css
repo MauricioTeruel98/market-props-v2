@@ -158,6 +158,7 @@
 /* Leaflet Map Styles */
 .leaflet-container {
     font-family: inherit;
+    z-index: 10;
 }
 
 .leaflet-popup-content-wrapper {
