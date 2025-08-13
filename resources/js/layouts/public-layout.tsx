@@ -1,5 +1,4 @@
 import { Link } from "@inertiajs/react";
-import { Icon } from "@/components/icon";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -33,12 +32,9 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                             <Link href="/public/properties" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
                                 Propiedades
                             </Link>
-                            <Link href="/register" passHref legacyBehavior>
-                                <Button
-                                    asChild
-                                    className="bg-sky-400 hover:bg-sky-500 text-sky-900 font-semibold px-3 py-2 rounded-md text-sm transition-colors"
-                                >
-                                    <a>Publicar</a>
+                            <Link href="/register">
+                                <Button className="bg-sky-400 hover:bg-sky-500 text-sky-900 font-semibold px-3 py-2 rounded-md text-sm transition-colors hover:cursor-pointer">
+                                    Publicar
                                 </Button>
                             </Link>
                         </nav>
@@ -73,14 +69,9 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                                         <Link 
                                             href="/register"
                                             onClick={() => setIsMobileMenuOpen(false)}
-                                            passHref
-                                            legacyBehavior
                                         >
-                                            <Button
-                                                asChild
-                                                className="bg-sky-400 hover:bg-sky-500 text-sky-900 font-semibold px-3 mx-3 py-2 rounded-md text-base transition-colors"
-                                            >
-                                                <a>Publicar</a>
+                                            <Button className="bg-sky-400 hover:bg-sky-500 text-sky-900 font-semibold px-3 mx-3 py-2 rounded-md text-base transition-colors">
+                                                Publicar
                                             </Button>
                                         </Link>
                                     </nav>
@@ -112,7 +103,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                             <ul className="space-y-2">
                                 <li><Link href="/" className="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">Inicio</Link></li>
                                 <li><Link href="/public/properties" className="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">Propiedades</Link></li>
-                                <li><Link href="/auth/login" className="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">Iniciar Sesión</Link></li>
+                                <li><Link href="/login" className="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">Iniciar Sesión</Link></li>
                             </ul>
                         </div>
                         
@@ -121,16 +112,16 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                             <ul className="space-y-2">
                                 <li className="text-sm sm:text-base text-gray-400">Alquiler</li>
                                 <li className="text-sm sm:text-base text-gray-400">Venta</li>
-                                <li className="text-sm sm:text-base text-gray-400">Asesoramiento</li>
+                                {/* <li className="text-sm sm:text-base text-gray-400">Asesoramiento</li> */}
                             </ul>
                         </div>
                         
                         <div>
                             <h4 className="font-semibold mb-3 sm:mb-4 text-white">Contacto</h4>
                             <ul className="space-y-2">
-                                <li className="text-sm sm:text-base text-gray-400">info@marketprops.com</li>
-                                <li className="text-sm sm:text-base text-gray-400">+54 11 1234-5678</li>
-                                <li className="text-sm sm:text-base text-gray-400">Buenos Aires, Argentina</li>
+                                <li className="text-sm sm:text-base text-gray-400">consultas@urbani.info</li>
+                                {/* <li className="text-sm sm:text-base text-gray-400">+54 11 1234-5678</li> */}
+                                <li className="text-sm sm:text-base text-gray-400">Tucumán, Argentina</li>
                             </ul>
                         </div>
                     </div>

@@ -423,7 +423,7 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
 
                                 <div>
                                     <Label htmlFor="status">Estado *</Label>
-                                    <Select value={data.status} onValueChange={(value) => setData('status', value)}>
+                                    <Select value={data.status} onValueChange={(value: 'available' | 'unavailable') => setData('status', value)}>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Seleccionar estado" />
                                         </SelectTrigger>

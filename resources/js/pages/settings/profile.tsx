@@ -53,7 +53,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
         facebook: auth.user.facebook || '',
         twitter: auth.user.twitter || '',
         instagram: auth.user.instagram || '',
-        whatsapp: auth.user.whatsapp || '',
+        whatsapp: (auth.user.whatsapp as string) || '',
         avatar: null,
         cover_image: null,
     });
