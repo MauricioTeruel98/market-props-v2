@@ -43,6 +43,10 @@ interface Property {
     };
     images: PropertyImage[];
     created_at: string;
+    whatsapp?: string;
+    facebook_messenger?: string;
+    contact_email?: string;
+    whatsapp_message?: string;
 }
 
 interface PropertyShowProps {
@@ -75,7 +79,7 @@ export default function PropertyShow({ property, relatedProperties }: PropertySh
 
     return (
         <PublicLayout>
-            <Head title={`${property.title} - Market Props`} />
+            <Head title={`${property.title} - Urbani`} />
             
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Breadcrumbs */}
@@ -255,26 +259,66 @@ export default function PropertyShow({ property, relatedProperties }: PropertySh
                                                 <Icon name="user" className="w-4 h-4 mr-2 text-gray-400" />
                                                 <span>{property.user.name}</span>
                                             </div>
-                                            {property.user.email && (
+                                            {property.contact_email && (
                                                 <div className="flex items-center">
                                                     <Icon name="mail" className="w-4 h-4 mr-2 text-gray-400" />
-                                                    <span>{property.user.email}</span>
+                                                    <span>{property.contact_email}</span>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
                                     
                                     <div>
-                                        <h3 className="text-lg font-semibold text-white mb-3">Acciones</h3>
+                                        <h3 className="text-lg font-semibold text-white mb-3">Métodos de Contacto</h3>
                                         <div className="space-y-3">
-                                            <Button className="w-full bg-sky-400 hover:bg-sky-500 text-sky-900 font-semibold transition-colors">
-                                                <Icon name="phone" className="mr-2 h-4 w-4" />
-                                                Contactar
-                                            </Button>
-                                            <Button variant="outline" className="w-full border-sky-400 text-sky-400 hover:bg-sky-400 hover:text-sky-900 transition-colors">
-                                                <Icon name="heart" className="mr-2 h-4 w-4" />
-                                                Guardar
-                                            </Button>
+                                            {property.whatsapp && (
+                                                <Button 
+                                                    className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold transition-colors"
+                                                    onClick={() => {
+                                                        const message = property.whatsapp_message || "Hola! Me interesa esta propiedad. ¿Podrías darme más información?";
+                                                        const whatsappUrl = `https://wa.me/${property.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+                                                        window.open(whatsappUrl, '_blank');
+                                                    }}
+                                                >
+                                                    <Icon name="message-circle" className="mr-2 h-4 w-4" />
+                                                    WhatsApp
+                                                </Button>
+                                            )}
+                                            
+                                            {property.facebook_messenger && (
+                                                <Button 
+                                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors"
+                                                    onClick={() => window.open(property.facebook_messenger, '_blank')}
+                                                >
+                                                    <Icon name="message-square" className="mr-2 h-4 w-4" />
+                                                    Facebook Messenger
+                                                </Button>
+                                            )}
+                                            
+                                            {property.contact_email && (
+                                                <Button 
+                                                    variant="outline" 
+                                                    className="w-full border-sky-400 text-sky-400 hover:bg-sky-400 hover:text-sky-900 transition-colors"
+                                                    onClick={() => {
+                                                        const subject = `Consulta sobre: ${property.title}`;
+                                                        const body = property.whatsapp_message || "Hola! Me interesa esta propiedad. ¿Podrías darme más información sobre disponibilidad, horarios de visita y cualquier detalle adicional que consideres importante?";
+                                                        const mailtoUrl = `mailto:${property.contact_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                                                        window.open(mailtoUrl);
+                                                    }}
+                                                >
+                                                    <Icon name="mail" className="mr-2 h-4 w-4" />
+                                                    Enviar Email
+                                                </Button>
+                                            )}
+                                            
+                                            {!property.whatsapp && !property.facebook_messenger && !property.contact_email && (
+                                                <div className="text-center py-4">
+                                                    <Icon name="alert-circle" className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+                                                    <p className="text-gray-400 text-sm">
+                                                        No hay métodos de contacto disponibles para esta propiedad.
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -288,22 +332,61 @@ export default function PropertyShow({ property, relatedProperties }: PropertySh
                         <Card className="mb-8 sticky top-8 bg-gray-900 border-gray-800">
                             <CardContent className="p-6">
                                 <h3 className="text-xl font-bold text-white mb-4">¿Te interesa esta propiedad?</h3>
-                                <div className="space-y-3">
-                                    <Button className="w-full bg-sky-400 hover:bg-sky-500 text-sky-900 font-semibold transition-colors">
-                                        <Icon name="phone" className="mr-2 h-4 w-4" />
-                                        Llamar Ahora
-                                    </Button>
-                                    <Button variant="outline" className="w-full border-sky-400 text-sky-400 hover:bg-sky-400 hover:text-sky-900 transition-colors">
-                                        <Icon name="mail" className="mr-2 h-4 w-4" />
-                                        Enviar Mensaje
-                                    </Button>
-                                    <Button variant="outline" className="w-full border-sky-400 text-sky-400 hover:bg-sky-400 hover:text-sky-900 transition-colors">
-                                        <Icon name="calendar" className="mr-2 h-4 w-4" />
-                                        Agendar Visita
-                                    </Button>
+                                
+                                {/* Métodos de Contacto Disponibles */}
+                                <div className="space-y-3 mb-6">
+                                    {property.whatsapp && (
+                                        <Button 
+                                            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold transition-colors"
+                                            onClick={() => {
+                                                const message = property.whatsapp_message || "Hola! Me interesa esta propiedad. ¿Podrías darme más información?";
+                                                const whatsappUrl = `https://wa.me/${property.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+                                                window.open(whatsappUrl, '_blank');
+                                            }}
+                                        >
+                                            <Icon name="message-circle" className="mr-2 h-4 w-4" />
+                                            Contactar por WhatsApp
+                                        </Button>
+                                    )}
+                                    
+                                    {property.facebook_messenger && (
+                                        <Button 
+                                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors"
+                                            onClick={() => window.open(property.facebook_messenger, '_blank')}
+                                        >
+                                            <Icon name="message-square" className="mr-2 h-4 w-4" />
+                                            Contactar por Messenger
+                                        </Button>
+                                    )}
+                                    
+                                    {property.contact_email && (
+                                        <Button 
+                                            variant="outline" 
+                                            className="w-full border-sky-400 text-sky-400 hover:bg-sky-400 hover:text-sky-900 transition-colors"
+                                            onClick={() => {
+                                                const subject = `Consulta sobre: ${property.title}`;
+                                                const body = property.whatsapp_message || "Hola! Me interesa esta propiedad. ¿Podrías darme más información sobre disponibilidad, horarios de visita y cualquier detalle adicional que consideres importante?";
+                                                const mailtoUrl = `mailto:${property.contact_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                                                window.open(mailtoUrl);
+                                            }}
+                                        >
+                                            <Icon name="mail" className="mr-2 h-4 w-4" />
+                                            Enviar Email
+                                        </Button>
+                                    )}
+                                    
+                                    {!property.whatsapp && !property.facebook_messenger && !property.contact_email && (
+                                        <div className="text-center py-4">
+                                            <Icon name="alert-circle" className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+                                            <p className="text-gray-400 text-sm">
+                                                No hay métodos de contacto disponibles para esta propiedad.
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                                 
-                                <div className="mt-6 pt-6 border-t border-gray-700">
+                                {/* Información del Precio */}
+                                <div className="pt-6 border-t border-gray-700">
                                     <div className="text-center">
                                         <div className="text-2xl font-bold text-sky-400 mb-2">
                                             {formatPrice(property.price, property.currency)}

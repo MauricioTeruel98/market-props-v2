@@ -179,6 +179,13 @@ export function Map({
                     sticky={true}
                 >
                     <div className="text-center">
+                        <div className="w-full h-32 overflow-hidden">
+                            <img
+                                src={`/storage/${location.cover_image}`}
+                                alt={location.title || 'Propiedad'}
+                                className="min-w-32 w-full h-full object-cover"
+                            />
+                        </div>
                         <div className="font-semibold text-sm text-gray-900 mb-1">
                             {location.title || 'Propiedad'}
                         </div>
@@ -198,9 +205,8 @@ export function Map({
                     </div>
                 </Tooltip>
                 
-                <Popup className="custom-popup">
+                {/* <Tooltip className="custom-popup">
                     <div className="w-64 p-0 overflow-hidden">
-                        {/* Imagen de portada */}
                         {location.cover_image && (
                             <div className="w-full h-32 overflow-hidden">
                                 <img
@@ -211,16 +217,13 @@ export function Map({
                             </div>
                         )}
                         
-                        {/* Contenido del popup */}
                         <div className="p-4">
-                            {/* Título y modalidad */}
                             {location.title && (
                                 <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2">
                                     {location.title}
                                 </h3>
                             )}
                             
-                            {/* Dirección */}
                             {location.address && (
                                 <p className="text-sm text-gray-600 mb-3 flex items-center">
                                     <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -231,7 +234,6 @@ export function Map({
                                 </p>
                             )}
                             
-                            {/* Precio y modalidad */}
                             {location.price && (
                                 <div className="flex items-center justify-between mb-3">
                                     <span className="text-lg font-bold text-blue-600">
@@ -248,7 +250,6 @@ export function Map({
                                 </div>
                             )}
                             
-                            {/* Propietario */}
                             {location.user?.name && (
                                 <p className="text-xs text-gray-500 mb-4 flex items-center">
                                     <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -258,7 +259,6 @@ export function Map({
                                 </p>
                             )}
                             
-                            {/* Botón para ver detalles */}
                             {location.id && (
                                 <button
                                     onClick={() => {
@@ -277,7 +277,7 @@ export function Map({
                             )}
                         </div>
                     </div>
-                </Popup>
+                </Tooltip> */}
             </Marker>
         ));
     };

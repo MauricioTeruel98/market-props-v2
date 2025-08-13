@@ -26,6 +26,7 @@ class Property extends Model
         'facebook_messenger',
         'contact_email',
         'whatsapp_message',
+        'status',
     ];
 
     protected $casts = [
