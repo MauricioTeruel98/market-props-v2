@@ -6,7 +6,19 @@ import {
     Trash, 
     ArrowLeft, 
     X,
-    ChevronUp
+    ChevronUp,
+    Home,
+    CheckCircle,
+    Key,
+    DollarSign,
+    User,
+    Check,
+    TrendingUp,
+    TrendingDown,
+    ArrowRight,
+    Settings,
+    Search,
+    HelpCircle
 } from 'lucide-react';
 
 interface IconProps {
@@ -22,6 +34,18 @@ const iconMap = {
     'arrow-left': ArrowLeft,
     'x': X,
     'chevron-up': ChevronUp,
+    'home': Home,
+    'check-circle': CheckCircle,
+    'key': Key,
+    'dollar-sign': DollarSign,
+    'user': User,
+    'check': Check,
+    'trending-up': TrendingUp,
+    'trending-down': TrendingDown,
+    'arrow-right': ArrowRight,
+    'settings': Settings,
+    'search': Search,
+    'help-circle': HelpCircle,
 };
 
 export function Icon({ name, className, ...props }: IconProps) {

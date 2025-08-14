@@ -10,6 +10,7 @@ import {
     DialogTrigger 
 } from "@/components/ui/dialog";
 import PublicLayout from "@/layouts/public-layout";
+import { Phone } from "lucide-react";
 
 interface PropertyImage {
     id: number;
@@ -75,12 +76,33 @@ export default function PropertyShow({ property, relatedProperties }: PropertySh
         return `$${numericPrice.toFixed(2)}`;
     };
 
+    const scrollToContact = () => {
+        const contactSection = document.querySelector('[data-contact-section]');
+        if (contactSection) {
+            contactSection.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    };
+
     const allImages = [property.cover_image, ...property.images.map(img => img.image_path)];
 
     return (
         <PublicLayout>
             <Head title={`${property.title} - Urbani`} />
             
+            {/* Botón flotante para móvil */}
+            <div className="lg:hidden fixed bottom-20 right-6 z-50">
+                <Button
+                    onClick={scrollToContact}
+                    className="bg-green-500 hover:bg-green-600 text-white rounded-full w-16 h-16 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
+                    aria-label="Ir a información de contacto"
+                >
+                    <Phone className="!w-6 !h-6" />
+                </Button>
+            </div>
+
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Breadcrumbs */}
                 <nav className="flex mb-8" aria-label="Breadcrumb">
@@ -248,7 +270,7 @@ export default function PropertyShow({ property, relatedProperties }: PropertySh
                         </Card>
 
                         {/* Contact Information */}
-                        <Card className="bg-gray-900 border-gray-800">
+                        <Card className="bg-gray-900 border-gray-800" data-contact-section>
                             <CardContent className="p-6">
                                 <h2 className="text-2xl font-bold text-white mb-6">Información de Contacto</h2>
                                 <div className="grid md:grid-cols-2 gap-6">
@@ -329,7 +351,7 @@ export default function PropertyShow({ property, relatedProperties }: PropertySh
                     {/* Sidebar */}
                     <div className="lg:col-span-1">
                         {/* Quick Contact */}
-                        <Card className="mb-8 sticky top-8 bg-gray-900 border-gray-800">
+                        <Card className="hidden lg:block mb-8 sticky top-8 bg-gray-900 border-gray-800">
                             <CardContent className="p-6">
                                 <h3 className="text-xl font-bold text-white mb-4">¿Te interesa esta propiedad?</h3>
                                 

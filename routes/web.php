@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\admin\PropertiesController as AdminPropertiesController;
 use App\Http\Controllers\super\PropertiesController as SuperPropertiesController;
 use App\Http\Controllers\Public\PropertiesController as PublicPropertiesController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Middleware\EnsureSuperadmin;
 
 Route::get('/', function () {
@@ -53,9 +54,7 @@ Route::get('/public/properties', [PublicPropertiesController::class, 'index'])->
 Route::get('/public/properties/{property}', [PublicPropertiesController::class, 'show'])->name('public.properties.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('properties', [AdminPropertiesController::class, 'index'])->name('properties');
 });

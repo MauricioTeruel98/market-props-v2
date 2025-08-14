@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, useMap, Tooltip } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -155,11 +155,11 @@ export function Map({
 }: MapProps) {
     const mapRef = useRef<L.Map>(null);
 
-    const handleMarkerClick = (location: MapLocation) => {
+    /*const handleMarkerClick = (location: MapLocation) => {
         if (onLocationSelect) {
             onLocationSelect(location);
         }
-    };
+    };*/
 
     const renderMarkers = () => {
         return locations.map((location, index) => (
@@ -167,11 +167,11 @@ export function Map({
                 key={location.id || index}
                 position={[location.lat, location.lng]}
                 eventHandlers={{
-                    click: () => handleMarkerClick(location)
+                    // click: () => handleMarkerClick(location)
                 }}
             >
                 {/* Tooltip que se muestra al hacer hover */}
-                <Tooltip
+                {/* <Tooltip
                     direction="top"
                     offset={[0, -10]}
                     className="custom-tooltip"
@@ -203,9 +203,9 @@ export function Map({
                             {location.modality === 'rent' ? 'Alquiler' : 'Venta'}
                         </div>
                     </div>
-                </Tooltip>
+                </Tooltip> */}
                 
-                {/* <Tooltip className="custom-popup">
+                <Popup className="custom-popup">
                     <div className="w-64 p-0 overflow-hidden">
                         {location.cover_image && (
                             <div className="w-full h-32 overflow-hidden">
@@ -277,7 +277,7 @@ export function Map({
                             )}
                         </div>
                     </div>
-                </Tooltip> */}
+                </Popup>
             </Marker>
         ));
     };
