@@ -6,6 +6,7 @@ import { Button } from './button';
 import { Input } from './input';
 import { Label } from './label';
 import { Icon } from '../icon';
+import { AddressAutocomplete } from './address-autocomplete';
 
 // Fix para los iconos de Leaflet
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
@@ -50,6 +51,7 @@ interface PropertyMapEditorProps {
     onLocationChange: (latitude: number | null, longitude: number | null) => void;
     height?: string;
     className?: string;
+    showAddressAutocomplete?: boolean;
 }
 
 // Componente para manejar eventos del mapa
@@ -81,7 +83,8 @@ export function PropertyMapEditor({
     initialLongitude, 
     onLocationChange, 
     height = "400px",
-    className = ""
+    className = "",
+    showAddressAutocomplete = true
 }: PropertyMapEditorProps) {
     // Función para validar y convertir coordenadas
     const parseCoordinate = (coord: number | null | undefined): number | null => {
@@ -100,6 +103,7 @@ export function PropertyMapEditor({
     const [currentMarker, setCurrentMarker] = useState<[number, number] | null>(
         initialLat && initialLng ? [initialLat, initialLng] : null
     );
+    const [searchAddress, setSearchAddress] = useState<string>('');
     
     const mapRef = useRef<L.Map>(null);
     const defaultCenter: [number, number] = [-26.8241, -65.2226]; // San Miguel de Tucumán por defecto
@@ -190,6 +194,32 @@ export function PropertyMapEditor({
         <div className={`space-y-4 ${className}`}>
             {/* Estilos CSS para el marcador */}
             <style>{markerStyles}</style>
+            
+            {/* Campo de autocompletado para ubicación */}
+            {showAddressAutocomplete && (
+                <AddressAutocomplete
+                    label="Buscar ubicación en el mapa"
+                    placeholder="Escribe una dirección, lugar o punto de interés para centrar el mapa..."
+                    value={searchAddress}
+                    onChange={setSearchAddress}
+                    onLocationSelect={(lat, lng) => {
+                        // Centrar el mapa en la ubicación seleccionada y actualizar coordenadas
+                        if (mapRef.current) {
+                            mapRef.current.setView([lat, lng], 16);
+                        }
+                        // Actualizar las coordenadas en el formulario
+                        const roundedLat = Math.round(lat * 1000000) / 1000000;
+                        const roundedLng = Math.round(lng * 1000000) / 1000000;
+                        setCurrentMarker([roundedLat, roundedLng]);
+                        setLatitude(roundedLat.toString());
+                        setLongitude(roundedLng.toString());
+                        onLocationChange(roundedLat, roundedLng);
+                        // Limpiar el campo de búsqueda después de seleccionar
+                        setSearchAddress('');
+                    }}
+                    className="mb-4 hidden"
+                />
+            )}
             
             {/* Controles de coordenadas */}
             <div className="grid grid-cols-2 gap-4">

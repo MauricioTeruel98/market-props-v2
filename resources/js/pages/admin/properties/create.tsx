@@ -486,6 +486,7 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
                                 initialLongitude={null}
                                 onLocationChange={handleLocationChange}
                                 height="400px"
+                                showAddressAutocomplete={true}
                             />
                         </CardContent>
                     </Card>

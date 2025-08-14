@@ -518,6 +518,7 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
                                 initialLongitude={property.longitude}
                                 onLocationChange={handleLocationChange}
                                 height="400px"
+                                showAddressAutocomplete={true}
                             />
                         </CardContent>
                     </Card>
