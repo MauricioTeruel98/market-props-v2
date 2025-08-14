@@ -72,10 +72,18 @@ export function RecentProperties({ properties, title, showUser = false }: Recent
                                     {property.modality === 'rent' ? 'Alquiler' : 'Venta'}
                                 </Badge>
                                 <span className="text-sm font-medium">
-                                    {property.currency === 'ars' 
-                                        ? `$${property.price.toLocaleString('es-AR')}` 
-                                        : `$${property.price.toFixed(2)}`
-                                    }
+                                    {(() => {
+                                        const numericPrice = typeof property.price === 'string' ? parseFloat(property.price) : property.price;
+                                        
+                                        if (isNaN(numericPrice) || numericPrice === null || numericPrice === undefined) {
+                                            return '$0';
+                                        }
+                                        
+                                        if (property.currency === 'ars') {
+                                            return `$${numericPrice.toLocaleString('es-AR')}`;
+                                        }
+                                        return `$${numericPrice.toFixed(2)}`;
+                                    })()}
                                 </span>
                             </div>
                             {showUser && property.user && (
