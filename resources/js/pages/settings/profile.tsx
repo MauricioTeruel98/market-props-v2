@@ -266,7 +266,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                         </Card>
 
                         {/* Imágenes */}
-                        <Card>
+                        <Card className="hidden">
                             <CardHeader>
                                 <CardTitle>Imágenes del perfil</CardTitle>
                                 <CardDescription>
@@ -274,7 +274,6 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6">
-                                {/* Avatar */}
                                 <div className="space-y-4">
                                     <Label>Foto de perfil</Label>
                                     <div className="flex items-center gap-4">
@@ -305,7 +304,6 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
                                 <Separator />
 
-                                {/* Cover Image */}
                                 <div className="space-y-4">
                                     <Label>Imagen de portada</Label>
                                     <div className="space-y-4">

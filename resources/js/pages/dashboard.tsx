@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { WelcomeSection } from '@/components/ui/welcome-section';
@@ -143,18 +143,18 @@ export default function Dashboard({
                     <div className="rounded-xl border border-sidebar-border/70 bg-card p-6 dark:border-sidebar-border">
                         <h3 className="mb-4 text-lg font-semibold">Acciones Rápidas</h3>
                         <div className="space-y-3">
-                            <div className="flex items-center space-x-3 p-3 rounded-lg border border-sidebar-border/50 hover:bg-muted/50">
+                            <Link href="/admin/properties/create" className="flex items-center space-x-3 p-3 rounded-lg border border-sidebar-border/50 hover:bg-muted/50">
                                 <Icon name="plus" className="h-5 w-5 text-primary" />
                                 <span className="text-sm">Crear nueva propiedad</span>
-                            </div>
+                            </Link>
                             <div className="flex items-center space-x-3 p-3 rounded-lg border border-sidebar-border/50 hover:bg-muted/50">
                                 <Icon name="search" className="h-5 w-5 text-blue-600" />
                                 <span className="text-sm">Buscar mis propiedades</span>
                             </div>
-                            <div className="flex items-center space-x-3 p-3 rounded-lg border border-sidebar-border/50 hover:bg-muted/50">
+                            <Link href="/settings/profile" className="flex items-center space-x-3 p-3 rounded-lg border border-sidebar-border/50 hover:bg-muted/50">
                                 <Icon name="settings" className="h-5 w-5 text-gray-600" />
                                 <span className="text-sm">Configuración</span>
-                            </div>
+                            </Link>
                             <div className="flex items-center space-x-3 p-3 rounded-lg border border-sidebar-border/50 hover:bg-muted/50">
                                 <Icon name="help-circle" className="h-5 w-5 text-orange-600" />
                                 <span className="text-sm">Ayuda y soporte</span>
