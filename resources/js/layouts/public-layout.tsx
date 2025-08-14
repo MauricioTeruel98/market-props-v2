@@ -21,7 +21,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                         {/* Logo */}
                         <div className="flex items-center">
                             <Link href="/" className="text-xl sm:text-2xl font-bold text-white">
-                                <img src="/assets/logo/Logo.png" alt="Urbani" className="h-10" />
+                                <img src="/assets/logo/logo.png" alt="Urbani" className="h-10" />
                             </Link>
                         </div>
 
@@ -94,7 +94,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
                         <div>
                             {/* <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white">Urbani</h3> */}
-                            <img src="/assets/logo/Logo.png" alt="Urbani" className="h-10 mb-3" />
+                            <img src="/assets/logo/logo.png" alt="Urbani" className="h-10 mb-3" />
                             <p className="text-sm sm:text-base text-gray-400">
                                 Tu plataforma confiable para encontrar la propiedad ideal.
                             </p>
