@@ -1,5 +1,3 @@
-import { Icon } from '@/components/icon';
-
 interface ChartData {
     label: string;
     value: number;

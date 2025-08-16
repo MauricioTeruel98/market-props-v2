@@ -26,7 +26,7 @@ export function ImageValidator({
     showInfo = true
 }: ImageValidatorProps) {
     
-    const validateImages = (): ImageValidationResult => {
+    const validateImages = React.useCallback((): ImageValidationResult => {
         const errors: string[] = [];
         const warnings: string[] = [];
         
@@ -40,7 +40,7 @@ export function ImageValidator({
         }
         
         // Validar cada archivo individualmente
-        files.forEach((file, index) => {
+        files.forEach((file) => {
             // Validar tipo de archivo
             if (!allowedTypes.includes(file.type)) {
                 errors.push(`${file.name}: Tipo de archivo no permitido. Solo se aceptan: ${allowedTypes.map(t => t.split('/')[1]).join(', ')}`);
@@ -70,12 +70,12 @@ export function ImageValidator({
         }
         
         return result;
-    };
+    }, [files, maxFiles, allowedTypes, maxSizeKB, onValidationChange]);
     
     // Ejecutar validación cuando cambien los archivos
     React.useEffect(() => {
         validateImages();
-    }, [files]);
+    }, [validateImages]);
     
     const validationResult = validateImages();
     
