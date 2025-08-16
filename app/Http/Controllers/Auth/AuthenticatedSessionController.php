@@ -29,11 +29,16 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
-
-        $request->session()->regenerate();
-
-        return redirect()->intended(route('dashboard', absolute: false));
+        try {
+            $request->authenticate();
+            $request->session()->regenerate();
+            return redirect()->intended(route('dashboard', absolute: false));
+        } catch (\Exception $e) {
+            // Asegurar que los errores de autenticación se manejen correctamente
+            return back()->withErrors([
+                'email' => __('auth.failed'),
+            ])->withInput($request->only('email'));
+        }
     }
 
     /**

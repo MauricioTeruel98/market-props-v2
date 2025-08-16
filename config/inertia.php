@@ -16,10 +16,24 @@ return [
     */
 
     'ssr' => [
-        'enabled' => true,
-        'url' => 'http://127.0.0.1:13714',
+        'enabled' => env('INERTIA_SSR_ENABLED', false),
+        'url' => env('INERTIA_SSR_URL', 'http://127.0.0.1:13714'),
         // 'bundle' => base_path('bootstrap/ssr/ssr.mjs'),
+    ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Security Settings
+    |--------------------------------------------------------------------------
+    |
+    | These options help prevent information disclosure and ensure proper
+    | content type handling for Inertia responses.
+    |
+    */
+
+    'security' => [
+        'force_html_response' => env('INERTIA_FORCE_HTML', true),
+        'prevent_json_exposure' => env('INERTIA_PREVENT_JSON_EXPOSURE', true),
     ],
 
     /*
