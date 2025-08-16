@@ -86,7 +86,7 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
             if (user.facebook_messenger) setData('facebook_messenger', user.facebook_messenger);
             if (user.email) setData('contact_email', user.email);
         }
-    }, [user]);
+    }, [user, setData]);
 
     // Verificar si faltan campos de contacto
     const missingContactFields = () => {
