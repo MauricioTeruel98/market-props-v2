@@ -198,7 +198,7 @@ export default function PropertyShow({ property, relatedProperties }: PropertySh
                             
                             {/* Image Navigation */}
                             {allImages.length > 1 && (
-                                <div className="flex space-x-2 mt-4 overflow-x-auto">
+                                <div className="flex space-x-2 mt-4 overflow-x-auto flex-wrap">
                                     {allImages.map((image, index) => (
                                         <button
                                             key={index}

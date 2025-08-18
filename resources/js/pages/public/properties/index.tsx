@@ -435,19 +435,44 @@ export default function PropertiesIndex({ properties, filters: initialFilters = 
                                 {properties.links.length > 3 && (
                                     <div className="mt-6 sm:mt-8 flex justify-center">
                                         <nav className="flex flex-wrap justify-center gap-1 sm:gap-2">
-                                            {properties.links.map((link, index) => (
-                                                <Link
-                                                    key={index}
-                                                    href={link.url || '#'}
-                                                    className={`px-2 sm:px-3 py-1 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
-                                                        link.active
-                                                            ? 'bg-sky-400 text-sky-900'
-                                                            : 'bg-gray-900 text-gray-300 hover:bg-gray-800 border border-gray-700'
-                                                    }`}
-                                                >
-                                                    {link.label}
-                                                </Link>
-                                            ))}
+                                            {properties.links.map((link, index) => {
+                                                // Determinar si es un enlace de navegación (anterior/siguiente)
+                                                const isNavigationLink = link.label === 'pagination.previous' || link.label === 'pagination.next';
+                                                
+                                                // Renderizar icono para enlaces de navegación
+                                                if (isNavigationLink) {
+                                                    const iconName = link.label === 'pagination.previous' ? 'arrow-left' : 'arrow-right';
+                                                    return (
+                                                        <Link
+                                                            key={index}
+                                                            href={link.url || '#'}
+                                                            className={`px-2 sm:px-3 py-1 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors flex items-center justify-center ${
+                                                                link.url
+                                                                    ? 'bg-gray-900 text-gray-300 hover:bg-gray-800 border border-gray-700'
+                                                                    : 'bg-gray-800 text-gray-500 border border-gray-700 cursor-not-allowed'
+                                                            }`}
+                                                            aria-label={link.label === 'pagination.previous' ? 'Página anterior' : 'Página siguiente'}
+                                                        >
+                                                            <Icon name={iconName} className="h-4 w-4" />
+                                                        </Link>
+                                                    );
+                                                }
+                                                
+                                                // Renderizar números de página normalmente
+                                                return (
+                                                    <Link
+                                                        key={index}
+                                                        href={link.url || '#'}
+                                                        className={`px-2 sm:px-3 py-1 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                                                            link.active
+                                                                ? 'bg-sky-400 text-sky-900'
+                                                                : 'bg-gray-900 text-gray-300 hover:bg-gray-800 border border-gray-700'
+                                                        }`}
+                                                    >
+                                                        {link.label}
+                                                    </Link>
+                                                );
+                                            })}
                                         </nav>
                                     </div>
                                 )}
