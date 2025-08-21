@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icon";
-import { ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
+import { ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 
 interface PropertyImageCarouselProps {
     images: string[];
@@ -142,14 +142,14 @@ export function PropertyImageCarousel({ images, propertyTitle }: PropertyImageCa
                     </DialogDescription>
                     <div className="relative w-full h-full min-h-[400px]">
                         {/* Close Button */}
-                        <Button
+                        {/* <Button
                             variant="ghost"
                             size="sm"
                             className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white rounded-full w-10 h-10"
                             onClick={() => setIsFullscreenOpen(false)}
                         >
                             <X className="w-5 h-5" />
-                        </Button>
+                        </Button> */}
 
                         {/* Navigation Buttons */}
                         {images.length > 1 && (
@@ -181,7 +181,7 @@ export function PropertyImageCarousel({ images, propertyTitle }: PropertyImageCa
                         )}
 
                         {/* Main Image */}
-                        <div className="w-full h-full flex items-center justify-center p-4">
+                        <div className="w-full h-full flex items-center justify-center p-4 max-h-[80vh]">
                             <img
                                 src={`/storage/${images[fullscreenIndex]}`}
                                 alt={`${propertyTitle} - Imagen ${fullscreenIndex + 1}`}
