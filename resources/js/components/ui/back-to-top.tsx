@@ -35,7 +35,7 @@ export function BackToTop() {
             {isVisible && (
                 <Button
                     onClick={scrollToTop}
-                    className="fixed bottom-6 right-6 z-50 bg-sky-400 hover:bg-sky-500 text-sky-900 rounded-full w-12 h-12 p-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+                    className="fixed bottom-20 lg:bottom-6 right-6 z-50 bg-sky-400 hover:bg-sky-500 text-sky-900 rounded-full w-12 h-12 p-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
                     aria-label="Volver arriba"
                 >
                     <Icon name="chevron-up" className="h-6 w-6" />
