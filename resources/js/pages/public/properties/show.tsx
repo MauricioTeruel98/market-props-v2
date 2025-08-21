@@ -1,14 +1,9 @@
 import { Head, Link } from "@inertiajs/react";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/icon";
-import { 
-    Dialog, 
-    DialogContent, 
-    DialogTrigger 
-} from "@/components/ui/dialog";
+import { PropertyImageCarousel } from "@/components/ui/property-image-carousel";
 import PublicLayout from "@/layouts/public-layout";
 import { Phone } from "lucide-react";
 
@@ -56,8 +51,6 @@ interface PropertyShowProps {
 }
 
 export default function PropertyShow({ property, relatedProperties }: PropertyShowProps) {
-    const [selectedImage, setSelectedImage] = useState(property.cover_image);
-    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
     const getModalityLabel = (modality: string) => {
         return modality === 'rent' ? 'Alquiler' : 'Venta';
@@ -169,62 +162,10 @@ export default function PropertyShow({ property, relatedProperties }: PropertySh
 
                         {/* Image Gallery */}
                         <div className="mb-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Main Image */}
-                                <div className="md:col-span-2">
-                                    <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
-                                        <DialogTrigger asChild>
-                                            <div className="aspect-video rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
-                                                <img
-                                                    src={`/storage/${selectedImage}`}
-                                                    alt={property.title}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-                                        </DialogTrigger>
-                                        <DialogContent className="max-w-4xl bg-gray-900 border-gray-800">
-                                            <img
-                                                src={`/storage/${selectedImage}`}
-                                                alt={property.title}
-                                                className="w-full h-auto"
-                                            />
-                                        </DialogContent>
-                                    </Dialog>
-                                </div>
-                                
-                                {/* Thumbnail Images */}
-                                {allImages.slice(1, 5).map((image, index) => (
-                                    <div key={index} className="aspect-video rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
-                                        <img
-                                            src={`/storage/${image}`}
-                                            alt={`${property.title} - Imagen ${index + 2}`}
-                                            className="w-full h-full object-cover"
-                                            onClick={() => setSelectedImage(image)}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                            
-                            {/* Image Navigation */}
-                            {allImages.length > 1 && (
-                                <div className="flex space-x-2 mt-4 overflow-x-auto flex-wrap">
-                                    {allImages.map((image, index) => (
-                                        <button
-                                            key={index}
-                                            onClick={() => setSelectedImage(image)}
-                                            className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                                                selectedImage === image ? 'border-sky-400' : 'border-gray-600'
-                                            }`}
-                                        >
-                                            <img
-                                                src={`/storage/${image}`}
-                                                alt={`${property.title} - Thumbnail ${index + 1}`}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                            <PropertyImageCarousel 
+                                images={allImages}
+                                propertyTitle={property.title}
+                            />
                         </div>
 
                         {/* Property Details */}
