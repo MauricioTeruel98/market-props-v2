@@ -44,7 +44,7 @@ export default function Landing({ featuredProperties = [], mapProperties = [] }:
     };
 
     return (
-        <PublicLayout>
+        <PublicLayout currentPage="home">
             <Head title="Urbani - Encuentra tu propiedad ideal" />
             
             {/* Hero Section */}

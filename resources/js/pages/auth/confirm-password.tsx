@@ -26,6 +26,9 @@ export default function ConfirmPassword() {
         <AuthLayout
             title="Confirmar tu contraseña"
             description="Esta es un área segura de la aplicación. Por favor confirma tu contraseña antes de continuar."
+            showBackButton={true}
+            backUrl={route('dashboard')}
+            backText="Volver al dashboard"
         >
             <Head title="Confirmar contraseña" />
 

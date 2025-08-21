@@ -4,12 +4,32 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { MenuIcon } from "lucide-react";
 import { BackToTop } from "@/components/ui/back-to-top";
+import PublicMobileNav from "@/components/public-mobile-nav";
+import PublicBreadcrumbs from "@/components/public-breadcrumbs";
 
 interface PublicLayoutProps {
     children: React.ReactNode;
+    currentPage?: string;
+    showMobileNav?: boolean;
+    showBackButton?: boolean;
+    backUrl?: string;
+    backText?: string;
+    breadcrumbs?: Array<{
+        label: string;
+        href?: string;
+        current?: boolean;
+    }>;
 }
 
-export default function PublicLayout({ children }: PublicLayoutProps) {
+export default function PublicLayout({ 
+    children, 
+    currentPage = 'home',
+    showMobileNav = true,
+    showBackButton = false,
+    backUrl = '/',
+    backText = 'Volver',
+    breadcrumbs = []
+}: PublicLayoutProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
@@ -33,7 +53,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                             <Link href="/public/properties" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
                                 Propiedades
                             </Link>
-                            <Link href="/register">
+                            <Link href="/autenticate">
                                 <Button className="bg-sky-400 hover:bg-sky-500 text-sky-900 font-semibold px-3 py-2 rounded-md text-sm transition-colors hover:cursor-pointer">
                                     Publicar
                                 </Button>
@@ -41,7 +61,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                         </nav>
 
                         {/* Mobile Menu Button */}
-                        <div className="md:hidden">
+                        <div className="hidden">
                             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                                 <SheetTrigger asChild>
                                     <Button variant="ghost" size="sm" className="text-white hover:bg-gray-800 p-2">
@@ -53,22 +73,22 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                                         <SheetTitle className="text-white text-lg">Menú</SheetTitle>
                                     </SheetHeader>
                                     <nav className="flex flex-col space-y-4">
-                                        <Link 
-                                            href="/" 
+                                        <Link
+                                            href="/"
                                             className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-base font-medium transition-colors hover:bg-gray-800"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
                                             Inicio
                                         </Link>
-                                        <Link 
-                                            href="/public/properties" 
+                                        <Link
+                                            href="/public/properties"
                                             className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-base font-medium transition-colors hover:bg-gray-800"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
                                             Propiedades
                                         </Link>
-                                        <Link 
-                                            href="/register"
+                                        <Link
+                                            href="/autenticate"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
                                             <Button className="bg-sky-400 hover:bg-sky-500 text-sky-900 font-semibold px-3 mx-3 py-2 rounded-md text-base transition-colors">
@@ -83,8 +103,17 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                 </div>
             </header>
 
+            {/* Breadcrumbs */}
+            {breadcrumbs.length > 0 && (
+                <div className="border-b border-gray-800 bg-gray-900">
+                    <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-2">
+                        <PublicBreadcrumbs items={breadcrumbs} />
+                    </div>
+                </div>
+            )}
+
             {/* Main Content */}
-            <main className="bg-black min-h-screen">
+            <main className={`bg-black min-h-screen ${showMobileNav ? 'pb-20' : ''}`}>
                 {children}
             </main>
 
@@ -99,7 +128,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                                 Tu plataforma confiable para encontrar la propiedad ideal.
                             </p>
                         </div>
-                        
+
                         <div>
                             <h4 className="font-semibold mb-3 sm:mb-4 text-white">Enlaces</h4>
                             <ul className="space-y-2">
@@ -108,7 +137,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                                 <li><Link href="/login" className="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">Iniciar Sesión</Link></li>
                             </ul>
                         </div>
-                        
+
                         <div>
                             <h4 className="font-semibold mb-3 sm:mb-4 text-white">Servicios</h4>
                             <ul className="space-y-2">
@@ -117,7 +146,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                                 {/* <li className="text-sm sm:text-base text-gray-400">Asesoramiento</li> */}
                             </ul>
                         </div>
-                        
+
                         <div>
                             <h4 className="font-semibold mb-3 sm:mb-4 text-white">Contacto</h4>
                             <ul className="space-y-2">
@@ -127,15 +156,30 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                             </ul>
                         </div>
                     </div>
-                    
-                    <div className="border-t border-gray-800 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-gray-400">
+
+                    <div className="border-t border-gray-800 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-gray-400 flex justify-between">
                         <p className="text-sm sm:text-base">&copy; {new Date().getFullYear()} Urbani. Todos los derechos reservados.</p>
+                        <p className="text-sm sm:text-base">
+
+                            Desarrollado con <span className="text-sky-400">❤</span> por Urbani
+
+                        </p>
                     </div>
                 </div>
             </footer>
-            
+
             {/* Back to Top Button */}
             <BackToTop />
+
+            {/* Navegación móvil */}
+            {showMobileNav && (
+                <PublicMobileNav 
+                    currentPage={currentPage}
+                    showBackButton={showBackButton}
+                    backUrl={backUrl}
+                    backText={backText}
+                />
+            )}
         </>
     );
 }
