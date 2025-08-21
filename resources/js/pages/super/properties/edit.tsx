@@ -82,8 +82,8 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Hook para validación de imágenes
-    const { validateFiles: validateCoverImage } = useImageValidation(2048);
-    const { validateFiles: validateAdditionalImages } = useImageValidation(2048);
+    const { validateFiles: validateCoverImage } = useImageValidation(5120);
+    const { validateFiles: validateAdditionalImages } = useImageValidation(5120);
 
     const { data, setData, post, processing, errors } = useForm({
         title: property.title,
@@ -146,7 +146,7 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
         // Filtrar solo las imágenes válidas
         const validFiles = files.filter(file => {
             const fileSizeKB = file.size / 1024;
-            return file.type.startsWith('image/') && fileSizeKB <= 2048;
+            return file.type.startsWith('image/') && fileSizeKB <= 5120;
         });
 
         if (validFiles.length !== files.length) {
@@ -447,7 +447,7 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
                             <CardContent className="space-y-4">
                                 {/* ALERTA DE ADVERTENCIA */}
                                 <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 rounded mb-2 text-sm">
-                                    <strong>Advertencia:</strong> La imagen debe ser inferior a 2MB.
+                                    <strong>Advertencia:</strong> La imagen debe ser inferior a 5MB.
                                 </div>
                                 <div>
                                     <Label htmlFor="cover_image">Cambiar imagen (opcional)</Label>
@@ -476,7 +476,7 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
                                 {data.cover_image && (
                                     <ImageValidator
                                         files={[data.cover_image]}
-                                        maxSizeKB={2048}
+                                        maxSizeKB={5120}
                                         maxFiles={1}
                                     />
                                 )}
@@ -698,7 +698,7 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
                         <CardContent className="space-y-4">
                             {/* ALERTA DE ADVERTENCIA */}
                             <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 rounded mb-2 text-sm">
-                                <strong>Advertencia:</strong> Cada imagen debe ser inferior a 2MB.
+                                <strong>Advertencia:</strong> Cada imagen debe ser inferior a 5MB.
                             </div>
                             <div className="flex items-center gap-4">
                                 <Button
@@ -747,7 +747,7 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
                             {data.additional_images.length > 0 && (
                                 <ImageValidator
                                     files={data.additional_images}
-                                    maxSizeKB={2048}
+                                    maxSizeKB={5120}
                                     maxFiles={20}
                                 />
                             )}

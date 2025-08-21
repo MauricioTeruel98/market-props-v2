@@ -93,9 +93,9 @@ class PropertiesController extends Controller
             'price' => 'required|numeric|min:0',
             'status' => 'required|in:available,unavailable',
             'amenities' => 'array',
-            'cover_image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'cover_image' => 'required|image|mimes:jpeg,png,jpg|max:5120',
             'additional_images' => 'array|max:20',
-            'additional_images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'additional_images.*' => 'image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
         $userId = auth()->id();
@@ -160,9 +160,9 @@ class PropertiesController extends Controller
             'price' => 'required|numeric|min:0',
             'status' => 'required|in:available,unavailable',
             'amenities' => 'array',
-            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'additional_images' => 'array|max:20',
-            'additional_images.*' => 'image|mimes:jpeg,png,jpg|max:2048',
+            'additional_images.*' => 'image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
         // Validar que no se exceda el límite de 20 imágenes en total

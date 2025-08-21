@@ -147,7 +147,7 @@ php artisan storage:cleanup-orphaned-folders
 ### **Validaciones**
 - Límite de 20 imágenes por propiedad
 - Tipos de archivo permitidos: jpeg, png, jpg
-- Tamaño máximo: 2MB por imagen
+- Tamaño máximo: 5MB por imagen
 - Campos requeridos validados
 
 ## 📱 Frontend

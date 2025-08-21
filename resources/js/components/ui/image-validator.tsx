@@ -19,7 +19,7 @@ interface ImageValidatorProps {
 
 export function ImageValidator({ 
     files, 
-    maxSizeKB = 2048, 
+    maxSizeKB = 5120, 
     maxFiles = 20,
     allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'],
     onValidationChange,
@@ -140,7 +140,7 @@ export function ImageValidator({
 }
 
 // Hook personalizado para validar imágenes
-export function useImageValidation(maxSizeKB: number = 2048) {
+export function useImageValidation(maxSizeKB: number = 5120) {
     const [validationResult, setValidationResult] = React.useState<ImageValidationResult>({
         isValid: true,
         errors: [],

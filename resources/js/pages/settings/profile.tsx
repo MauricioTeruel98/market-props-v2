@@ -295,7 +295,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                                 className="max-w-xs"
                                             />
                                             <p className="text-sm text-muted-foreground">
-                                                JPG, PNG o GIF. Máximo 2MB.
+                                                JPG, PNG o GIF. Máximo 5MB.
                                             </p>
                                         </div>
                                     </div>
@@ -325,7 +325,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                                 className="max-w-xs"
                                             />
                                             <p className="text-sm text-muted-foreground">
-                                                JPG, PNG o GIF. Máximo 2MB.
+                                                JPG, PNG o GIF. Máximo 5MB.
                                             </p>
                                         </div>
                                     </div>

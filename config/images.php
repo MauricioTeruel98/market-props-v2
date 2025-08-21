@@ -11,8 +11,8 @@ return [
     |
     */
 
-    // Tamaño máximo de archivo en KB (2MB = 2048 KB)
-    'max_file_size_kb' => env('IMAGE_MAX_SIZE_KB', 2048),
+    // Tamaño máximo de archivo en KB (5MB = 5120 KB)
+    'max_file_size_kb' => env('IMAGE_MAX_SIZE_KB', 5120),
     
     // Tamaño máximo de archivo en MB
     'max_file_size_mb' => env('IMAGE_MAX_SIZE_MB', 2),

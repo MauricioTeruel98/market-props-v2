@@ -140,7 +140,7 @@ Modifica la validación en el controlador y las vistas frontend.
 ## Notas Técnicas
 
 - El sistema utiliza Inertia.js para la comunicación entre frontend y backend
-- Las imágenes se validan por tipo (jpeg, png, jpg) y tamaño máximo (2MB)
+- Las imágenes se validan por tipo (jpeg, png, jpg) y tamaño máximo (5MB)
 - Se implementa soft delete para mantener integridad referencial
 - El sistema es completamente responsive y funciona en dispositivos móviles
 
