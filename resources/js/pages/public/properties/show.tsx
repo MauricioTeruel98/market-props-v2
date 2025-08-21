@@ -95,7 +95,7 @@ export default function PropertyShow({ property, relatedProperties }: PropertySh
             <Head title={`${property.title} - Urbani`} />
             
             {/* Botón flotante para móvil */}
-            <div className="lg:hidden fixed bottom-20 right-6 z-50">
+            <div className="lg:hidden fixed bottom-36 lg:bottom-20 right-6 z-50">
                 <Button
                     onClick={scrollToContact}
                     className="bg-green-500 hover:bg-green-600 text-white rounded-full w-16 h-16 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
