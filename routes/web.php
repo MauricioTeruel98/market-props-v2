@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\admin\PropertiesController as AdminPropertiesController;
@@ -48,6 +49,13 @@ Route::get('/', function () {
         'mapProperties' => $allProperties
     ]);
 })->name('home');
+
+Route::get('/autenticate', function () {
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return Inertia::render('auth/autenticate');
+})->name('autenticate');
 
 // Rutas públicas para propiedades
 Route::get('/public/properties', [PublicPropertiesController::class, 'index'])->name('public.properties.index');

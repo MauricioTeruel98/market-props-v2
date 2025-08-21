@@ -36,7 +36,18 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     };
 
     return (
-        <AuthLayout title="Iniciar sesión" description="Ingresa tu correo electrónico y contraseña para iniciar sesión">
+        <AuthLayout 
+            title="Iniciar sesión" 
+            description="Ingresa tu correo electrónico y contraseña para iniciar sesión"
+            showBackButton={true}
+            backUrl={route('home')}
+            backText="Volver al inicio"
+            breadcrumbs={[
+                { label: 'Autenticación', href: route('autenticate') },
+                { label: 'Iniciar Sesión', current: true }
+            ]}
+            currentPage="login"
+        >
             <Head title="Iniciar sesión" />
 
             <form method="POST" className="flex flex-col gap-6" onSubmit={submit}>

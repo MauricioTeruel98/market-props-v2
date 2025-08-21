@@ -32,7 +32,18 @@ export default function Register() {
     };
 
     return (
-        <AuthLayout title="Crear una cuenta" description="Ingresa tus detalles a continuación para crear tu cuenta">
+        <AuthLayout 
+            title="Crear una cuenta" 
+            description="Ingresa tus detalles a continuación para crear tu cuenta"
+            showBackButton={true}
+            backUrl={route('home')}
+            backText="Volver al inicio"
+            breadcrumbs={[
+                { label: 'Autenticación', href: route('autenticate') },
+                { label: 'Registrarse', current: true }
+            ]}
+            currentPage="registro"
+        >
             <Head title="Registrarse" />
             <form method="POST" className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">

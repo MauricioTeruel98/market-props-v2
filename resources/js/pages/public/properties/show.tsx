@@ -89,7 +89,16 @@ export default function PropertyShow({ property, relatedProperties }: PropertySh
     const allImages = [property.cover_image, ...property.images.map(img => img.image_path)];
 
     return (
-        <PublicLayout>
+        <PublicLayout 
+            currentPage="properties"
+            showBackButton={true}
+            backUrl={route('public.properties.index')}
+            backText="Volver a propiedades"
+            breadcrumbs={[
+                { label: 'Propiedades', href: route('public.properties.index') },
+                { label: property.title, current: true }
+            ]}
+        >
             <Head title={`${property.title} - Urbani`} />
             
             {/* Botón flotante para móvil */}
@@ -105,7 +114,7 @@ export default function PropertyShow({ property, relatedProperties }: PropertySh
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Breadcrumbs */}
-                <nav className="flex mb-8" aria-label="Breadcrumb">
+                {/* <nav className="flex mb-8" aria-label="Breadcrumb">
                     <ol className="inline-flex items-center space-x-1 md:space-x-3">
                         <li className="inline-flex items-center">
                             <Link href="/" className="inline-flex items-center text-sm font-medium text-gray-300 hover:text-sky-400 transition-colors">
@@ -128,7 +137,7 @@ export default function PropertyShow({ property, relatedProperties }: PropertySh
                             </div>
                         </li>
                     </ol>
-                </nav>
+                </nav> */}
 
                 <div className="grid lg:grid-cols-3 gap-8">
                     {/* Main Content */}

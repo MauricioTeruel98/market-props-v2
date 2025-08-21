@@ -36,7 +36,18 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
     };
 
     return (
-        <AuthLayout title="Restablecer contraseña" description="Por favor ingresa tu nueva contraseña a continuación">
+        <AuthLayout 
+            title="Restablecer contraseña" 
+            description="Por favor ingresa tu nueva contraseña a continuación"
+            showBackButton={true}
+            backUrl={route('login')}
+            backText="Volver al login"
+            breadcrumbs={[
+                { label: 'Autenticación', href: route('autenticate') },
+                { label: 'Iniciar Sesión', href: route('login') },
+                { label: 'Restablecer Contraseña', current: true }
+            ]}
+        >
             <Head title="Restablecer contraseña" />
 
             <form method="POST" onSubmit={submit}>

@@ -22,7 +22,18 @@ export default function ForgotPassword({ status }: { status?: string }) {
     };
 
     return (
-        <AuthLayout title="Olvidaste tu contraseña" description="Ingresa tu correo electrónico para recibir un enlace de restablecimiento de contraseña">
+        <AuthLayout 
+            title="Olvidaste tu contraseña" 
+            description="Ingresa tu correo electrónico para recibir un enlace de restablecimiento de contraseña"
+            showBackButton={true}
+            backUrl={route('login')}
+            backText="Volver al login"
+            breadcrumbs={[
+                { label: 'Autenticación', href: route('autenticate') },
+                { label: 'Iniciar Sesión', href: route('login') },
+                { label: 'Recuperar Contraseña', current: true }
+            ]}
+        >
             <Head title="Olvidaste tu contraseña" />
 
             {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
