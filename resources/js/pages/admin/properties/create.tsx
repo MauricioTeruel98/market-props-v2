@@ -12,6 +12,9 @@ import { PropertyMapEditor } from "@/components/ui/property-map-editor";
 import { ImageValidator, useImageValidation } from "@/components/ui/image-validator";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useRef, useEffect } from "react";
+import { useImageCompression } from "@/hooks/use-image-compression";
+import { CompressionStats } from "@/components/ui/compression-stats";
+import { CompressionProgress } from "@/components/ui/compression-progress";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -55,11 +58,21 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
     const [coverPreview, setCoverPreview] = useState<string | null>(null);
     const [additionalPreviews, setAdditionalPreviews] = useState<string[]>([]);
     const [isLoadingPreviews, setIsLoadingPreviews] = useState(false);
+    const [compressionResults, setCompressionResults] = useState<import('@/hooks/use-image-compression').CompressionResult[]>([]);
+    const [showCompressionStats, setShowCompressionStats] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    
+
     // Hook para validación de imágenes
     const { validateFiles: validateCoverImage } = useImageValidation(5120);
     const { validateFiles: validateAdditionalImages } = useImageValidation(5120);
+
+    // Hook para compresión de imágenes
+    const {
+        compressImage,
+        compressMultipleImages,
+        isCompressing,
+        compressionProgress
+    } = useImageCompression();
 
     const { data, setData, post, processing, errors } = useForm({
         title: '',
@@ -102,14 +115,14 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
     // Función para convertir URL de Facebook a Messenger
     const convertFacebookToMessenger = (facebookUrl: string): string => {
         if (!facebookUrl) return '';
-        
+
         // Extraer el nombre de usuario de la URL de Facebook
         const match = facebookUrl.match(/facebook\.com\/([^/?]+)/);
         if (match) {
             const username = match[1].split('?')[0]; // Remover parámetros adicionales
             return `https://m.me/${username}`;
         }
-        
+
         return facebookUrl; // Si no se puede convertir, devolver la URL original
     };
 
@@ -130,7 +143,7 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
     // Mensaje genérico por defecto
     const defaultWhatsAppMessage = "Hola! Me interesa esta propiedad. ¿Podrías darme más información sobre disponibilidad, horarios de visita y cualquier detalle adicional que consideres importante?";
 
-    const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleCoverImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             // Validar la imagen antes de procesarla
@@ -140,23 +153,47 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
                 e.target.value = '';
                 return;
             }
-            
-            setData('cover_image', file);
-            const reader = new FileReader();
-            reader.onload = (e) => setCoverPreview(e.target?.result as string);
-            reader.readAsDataURL(file);
+
+            try {
+                // Comprimir la imagen
+                const compressionResult = await compressImage(file, {
+                    maxSizeMB: 1,
+                    maxWidthOrHeight: 1920,
+                    quality: 0.8,
+                });
+
+                // Usar la imagen comprimida
+                setData('cover_image', compressionResult.compressedFile);
+
+                // Mostrar estadísticas de compresión
+                setCompressionResults([compressionResult]);
+                setShowCompressionStats(true);
+
+                // Generar preview con la imagen comprimida
+                const reader = new FileReader();
+                reader.onload = (e) => setCoverPreview(e.target?.result as string);
+                reader.readAsDataURL(compressionResult.compressedFile);
+
+            } catch (error) {
+                console.error('Error al comprimir la imagen:', error);
+                // En caso de error, usar la imagen original
+                setData('cover_image', file);
+                const reader = new FileReader();
+                reader.onload = (e) => setCoverPreview(e.target?.result as string);
+                reader.readAsDataURL(file);
+            }
         }
     };
 
-    const handleAdditionalImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAdditionalImagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         const totalImages = data.additional_images.length + files.length;
-        
+
         if (totalImages > 20) {
             alert(`Máximo 20 imágenes adicionales permitidas. Ya tienes ${data.additional_images.length} y estás intentando agregar ${files.length}.`);
             return;
         }
-        
+
         // Validar las nuevas imágenes antes de procesarlas
         const validation = validateAdditionalImages(files);
         if (!validation.isValid) {
@@ -164,70 +201,111 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
             e.target.value = '';
             return;
         }
-        
+
         // Filtrar solo las imágenes válidas
         const validFiles = files.filter(file => {
             const fileSizeKB = file.size / 1024;
             return file.type.startsWith('image/') && fileSizeKB <= 5120;
         });
-        
+
         if (validFiles.length !== files.length) {
             const invalidCount = files.length - validFiles.length;
             alert(`${invalidCount} imagen(es) no cumplen con los requisitos y no serán procesadas.`);
         }
-        
-        // Agregar solo las imágenes válidas
-        const newFiles = [...data.additional_images, ...validFiles];
-        setData('additional_images', newFiles);
-        
-        // Mostrar indicador de carga
-        setIsLoadingPreviews(true);
-        
-        // Generar previews solo para las nuevas imágenes
-        const newPreviews = files.map(file => {
-            return new Promise<string>((resolve, reject) => {
-                // Validar que sea una imagen
-                if (!file.type.startsWith('image/')) {
-                    reject(new Error('El archivo no es una imagen válida'));
-                    return;
-                }
-                
-                const reader = new FileReader();
-                
-                reader.onload = (e) => {
-                    if (e.target?.result && typeof e.target.result === 'string') {
-                        resolve(e.target.result);
-                    } else {
-                        reject(new Error('No se pudo generar la previsualización'));
+
+        try {
+            // Comprimir las imágenes válidas
+            const compressionResults = await compressMultipleImages(validFiles, {
+                maxSizeMB: 1,
+                maxWidthOrHeight: 1920,
+                quality: 0.8,
+            });
+
+            // Usar las imágenes comprimidas
+            const compressedFiles = compressionResults.map(result => result.compressedFile);
+            const newFiles = [...data.additional_images, ...compressedFiles];
+            setData('additional_images', newFiles);
+
+            // Mostrar estadísticas de compresión
+            setCompressionResults(compressionResults);
+            setShowCompressionStats(true);
+
+            // Mostrar indicador de carga
+            setIsLoadingPreviews(true);
+
+            // Generar previews con las imágenes comprimidas
+            const newPreviews = compressedFiles.map(file => {
+                return new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+
+                    reader.onload = (e) => {
+                        if (e.target?.result && typeof e.target.result === 'string') {
+                            resolve(e.target.result);
+                        } else {
+                            reject(new Error('No se pudo generar la previsualización'));
+                        }
+                    };
+
+                    reader.onerror = () => {
+                        reject(new Error(`Error al leer el archivo: ${file.name}`));
+                    };
+
+                    reader.onabort = () => {
+                        reject(new Error('Lectura del archivo cancelada'));
+                    };
+
+                    try {
+                        reader.readAsDataURL(file);
+                    } catch {
+                        reject(new Error(`Error al procesar el archivo: ${file.name}`));
                     }
-                };
-                
-                reader.onerror = () => {
-                    reject(new Error(`Error al leer el archivo: ${file.name}`));
-                };
-                
-                reader.onabort = () => {
-                    reject(new Error('Lectura del archivo cancelada'));
-                };
-                
-                try {
+                });
+            });
+
+            Promise.all(newPreviews)
+                .then(newPreviewUrls => {
+                    setAdditionalPreviews(prev => [...prev, ...newPreviewUrls]);
+                    setIsLoadingPreviews(false);
+                })
+                .catch(error => {
+                    console.error('Error al generar previews:', error);
+                    alert(`Error al generar las previsualizaciones: ${error.message}`);
+                    setIsLoadingPreviews(false);
+                });
+
+        } catch (error) {
+            console.error('Error al comprimir las imágenes:', error);
+            // En caso de error, usar las imágenes originales
+            const newFiles = [...data.additional_images, ...validFiles];
+            setData('additional_images', newFiles);
+
+            // Generar previews con las imágenes originales
+            setIsLoadingPreviews(true);
+            const newPreviews = validFiles.map(file => {
+                return new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        if (e.target?.result && typeof e.target.result === 'string') {
+                            resolve(e.target.result);
+                        } else {
+                            reject(new Error('No se pudo generar la previsualización'));
+                        }
+                    };
+                    reader.onerror = () => reject(new Error(`Error al leer el archivo: ${file.name}`));
                     reader.readAsDataURL(file);
-                } catch {
-                    reject(new Error(`Error al procesar el archivo: ${file.name}`));
-                }
+                });
             });
-        });
-        
-        Promise.all(newPreviews)
-            .then(newPreviewUrls => {
-                setAdditionalPreviews(prev => [...prev, ...newPreviewUrls]);
-                setIsLoadingPreviews(false);
-            })
-            .catch(error => {
-                console.error('Error al generar previews:', error);
-                alert(`Error al generar las previsualizaciones: ${error.message}`);
-                setIsLoadingPreviews(false);
-            });
+
+            Promise.all(newPreviews)
+                .then(newPreviewUrls => {
+                    setAdditionalPreviews(prev => [...prev, ...newPreviewUrls]);
+                    setIsLoadingPreviews(false);
+                })
+                .catch(error => {
+                    console.error('Error al generar previews:', error);
+                    setIsLoadingPreviews(false);
+                });
+        }
 
         // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
         if (fileInputRef.current) {
@@ -250,7 +328,7 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         // Limpiar coordenadas vacías antes de enviar
         const formData = { ...data };
         if (formData.latitude === '') {
@@ -259,11 +337,11 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
         if (formData.longitude === '') {
             formData.longitude = '';
         }
-        
+
         // Actualizar el formulario con los datos limpios
         setData('latitude', formData.latitude);
         setData('longitude', formData.longitude);
-        
+
         // Debug: mostrar datos que se van a enviar
         console.log('Datos a enviar:', {
             title: data.title,
@@ -275,7 +353,7 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
             price: data.price,
             amenities: data.amenities
         });
-        
+
         post('/admin/properties');
     };
 
@@ -425,7 +503,7 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
                             <CardContent className="space-y-4">
                                 {/* ALERTA DE ADVERTENCIA */}
                                 <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 rounded mb-2 text-sm">
-                                    <strong>Advertencia:</strong> La imagen debe ser inferior a 5MB.
+                                    <strong>Advertencia:</strong> La imagen debe ser inferior a 5MB. Las imágenes se comprimirán automáticamente para optimizar el tamaño.
                                 </div>
                                 <div>
                                     <Label htmlFor="cover_image">Seleccionar imagen</Label>
@@ -443,8 +521,8 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
 
                                 {/* Validación de imagen de portada */}
                                 {data.cover_image && (
-                                    <ImageValidator 
-                                        files={[data.cover_image]} 
+                                    <ImageValidator
+                                        files={[data.cover_image]}
                                         maxSizeKB={5120}
                                         maxFiles={1}
                                     />
@@ -469,6 +547,48 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
                                         >
                                             <Icon name="x" className="h-4 w-4" />
                                         </Button>
+                                    </div>
+                                )}
+
+                                {/* Estadísticas de compresión */}
+                                {showCompressionStats && compressionResults.length > 0 && (
+                                    <div className="mt-6 hidden">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h4 className="text-sm font-medium text-muted-foreground">Estadísticas de compresión</h4>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setShowCompressionStats(false)}
+                                            >
+                                                <Icon name="x" className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                        <CompressionStats
+                                            results={compressionResults}
+                                            showDetails={true}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Estadísticas de compresión para imagen de portada */}
+                                {showCompressionStats && compressionResults.length === 1 && data.cover_image && (
+                                    <div className="mt-4 hidden">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h4 className="text-sm font-medium text-muted-foreground">Estadísticas de compresión</h4>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setShowCompressionStats(false)}
+                                            >
+                                                <Icon name="x" className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                        <CompressionStats
+                                            results={compressionResults}
+                                            showDetails={false}
+                                        />
                                     </div>
                                 )}
                             </CardContent>
@@ -503,7 +623,7 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
                                         <Checkbox
                                             id={amenity}
                                             checked={data.amenities.includes(amenity)}
-                                            onCheckedChange={(checked) => 
+                                            onCheckedChange={(checked) =>
                                                 handleAmenityChange(amenity, checked as boolean)
                                             }
                                         />
@@ -571,7 +691,7 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
                                         </Button>
                                     </div>
                                     <p className="text-sm text-muted-foreground mt-1">
-                                        {user.facebook 
+                                        {user.facebook
                                             ? `Se generó automáticamente desde tu Facebook: ${user.facebook}`
                                             : 'Configura tu Facebook en tu perfil para generar automáticamente la URL de Messenger'
                                         }
@@ -619,7 +739,7 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
                                     </Button>
                                 </div>
                                 <p className="text-sm text-muted-foreground mt-1">
-                                    Este mensaje se usará como plantilla cuando los usuarios contacten por WhatsApp. 
+                                    Este mensaje se usará como plantilla cuando los usuarios contacten por WhatsApp.
                                     Si no escribes nada, se usará un mensaje genérico por defecto.
                                 </p>
                                 {errors.whatsapp_message && (
@@ -640,7 +760,7 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
                         <CardContent className="space-y-4">
                             {/* ALERTA DE ADVERTENCIA */}
                             <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 rounded mb-2 text-sm">
-                                <strong>Advertencia:</strong> Cada imagen debe ser inferior a 5MB.
+                                <strong>Advertencia:</strong> Cada imagen debe ser inferior a 5MB. Las imágenes se comprimirán automáticamente para optimizar el tamaño.
                             </div>
                             <div className="flex items-center gap-4">
                                 <Button
@@ -653,7 +773,7 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
                                     Agregar Imágenes
                                 </Button>
                                 <span className="text-sm text-muted-foreground">
-                                    {getRemainingImages() > 0 
+                                    {getRemainingImages() > 0
                                         ? `Puedes agregar hasta ${getRemainingImages()} imágenes más`
                                         : 'Límite de imágenes alcanzado'
                                     }
@@ -673,12 +793,18 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
                             {/* Información sobre la selección múltiple */}
                             <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
                                 <p className="text-sm text-blue-700 dark:text-blue-300">
-                                    <strong>Tip:</strong> También puedes usar Ctrl+Click para seleccionar múltiples imágenes de una vez, 
+                                    <strong>Tip:</strong> También puedes usar Ctrl+Click para seleccionar múltiples imágenes de una vez,
                                     o arrastrar y soltar varias imágenes sobre el botón "Agregar Imágenes".
                                 </p>
                             </div>
 
-                            {isLoadingPreviews && (
+                            {/* Progreso de compresión */}
+                            <CompressionProgress
+                                isCompressing={isCompressing}
+                                progress={compressionProgress}
+                            />
+
+                            {isLoadingPreviews && !isCompressing && (
                                 <div className="flex items-center justify-center p-4">
                                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                                     <span className="ml-2 text-sm text-muted-foreground">Generando previsualizaciones...</span>
@@ -687,8 +813,8 @@ export default function CreateProperty({ user }: CreatePropertyProps) {
 
                             {/* Validación de imágenes adicionales */}
                             {data.additional_images.length > 0 && (
-                                <ImageValidator 
-                                    files={data.additional_images} 
+                                <ImageValidator
+                                    files={data.additional_images}
                                     maxSizeKB={5120}
                                     maxFiles={20}
                                 />

@@ -12,6 +12,9 @@ import { PropertyMapEditor } from "@/components/ui/property-map-editor";
 import { ImageValidator, useImageValidation } from "@/components/ui/image-validator";
 import { useState, useEffect, useRef } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import { useImageCompression } from "@/hooks/use-image-compression";
+import { CompressionStats } from "@/components/ui/compression-stats";
+import { CompressionProgress } from "@/components/ui/compression-progress";
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -79,11 +82,21 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
     const [additionalPreviews, setAdditionalPreviews] = useState<string[]>([]);
     const [existingImages, setExistingImages] = useState(property.images);
     const [isLoadingPreviews, setIsLoadingPreviews] = useState(false);
+    const [compressionResults, setCompressionResults] = useState<import('@/hooks/use-image-compression').CompressionResult[]>([]);
+    const [showCompressionStats, setShowCompressionStats] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Hook para validación de imágenes
     const { validateFiles: validateCoverImage } = useImageValidation(5120);
     const { validateFiles: validateAdditionalImages } = useImageValidation(5120);
+    
+    // Hook para compresión de imágenes
+    const { 
+        compressImage, 
+        compressMultipleImages, 
+        isCompressing, 
+        compressionProgress 
+    } = useImageCompression();
 
     const { data, setData, post, processing, errors } = useForm({
         title: property.title,
@@ -108,7 +121,7 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
         setExistingImages(property.images);
     }, [property.images]);
 
-    const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleCoverImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             // Validar la imagen antes de procesarla
@@ -119,14 +132,38 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
                 return;
             }
 
-            setData('cover_image', file);
-            const reader = new FileReader();
-            reader.onload = (e) => setCoverPreview(e.target?.result as string);
-            reader.readAsDataURL(file);
+            try {
+                // Comprimir la imagen
+                const compressionResult = await compressImage(file, {
+                    maxSizeMB: 1,
+                    maxWidthOrHeight: 1920,
+                    quality: 0.8,
+                });
+                
+                // Usar la imagen comprimida
+                setData('cover_image', compressionResult.compressedFile);
+                
+                // Mostrar estadísticas de compresión
+                setCompressionResults([compressionResult]);
+                setShowCompressionStats(true);
+                
+                // Generar preview con la imagen comprimida
+                const reader = new FileReader();
+                reader.onload = (e) => setCoverPreview(e.target?.result as string);
+                reader.readAsDataURL(compressionResult.compressedFile);
+                
+            } catch (error) {
+                console.error('Error al comprimir la imagen:', error);
+                // En caso de error, usar la imagen original
+                setData('cover_image', file);
+                const reader = new FileReader();
+                reader.onload = (e) => setCoverPreview(e.target?.result as string);
+                reader.readAsDataURL(file);
+            }
         }
     };
 
-    const handleAdditionalImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAdditionalImagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         const totalImages = existingImages.length + data.additional_images.length + files.length;
 
@@ -154,58 +191,99 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
             alert(`${invalidCount} imagen(es) no cumplen con los requisitos y no serán procesadas.`);
         }
 
-        // Agregar solo las imágenes válidas
-        const newFiles = [...data.additional_images, ...validFiles];
-        setData('additional_images', newFiles);
-
-        // Mostrar indicador de carga
-        setIsLoadingPreviews(true);
-
-        // Generar previews solo para las nuevas imágenes
-        const newPreviews = files.map(file => {
-            return new Promise<string>((resolve, reject) => {
-                // Validar que sea una imagen
-                if (!file.type.startsWith('image/')) {
-                    reject(new Error('El archivo no es una imagen válida'));
-                    return;
-                }
-
-                const reader = new FileReader();
-
-                reader.onload = (e) => {
-                    if (e.target?.result && typeof e.target.result === 'string') {
-                        resolve(e.target.result);
-                    } else {
-                        reject(new Error('No se pudo generar la previsualización'));
+        try {
+            // Comprimir las imágenes válidas
+            const compressionResults = await compressMultipleImages(validFiles, {
+                maxSizeMB: 1,
+                maxWidthOrHeight: 1920,
+                quality: 0.8,
+            });
+            
+            // Usar las imágenes comprimidas
+            const compressedFiles = compressionResults.map(result => result.compressedFile);
+            const newFiles = [...data.additional_images, ...compressedFiles];
+            setData('additional_images', newFiles);
+            
+            // Mostrar estadísticas de compresión
+            setCompressionResults(compressionResults);
+            setShowCompressionStats(true);
+            
+            // Mostrar indicador de carga
+            setIsLoadingPreviews(true);
+            
+            // Generar previews con las imágenes comprimidas
+            const newPreviews = compressedFiles.map(file => {
+                return new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = (e) => {
+                        if (e.target?.result && typeof e.target.result === 'string') {
+                            resolve(e.target.result);
+                        } else {
+                            reject(new Error('No se pudo generar la previsualización'));
+                        }
+                    };
+                    
+                    reader.onerror = () => {
+                        reject(new Error(`Error al leer el archivo: ${file.name}`));
+                    };
+                    
+                    reader.onabort = () => {
+                        reject(new Error('Lectura del archivo cancelada'));
+                    };
+                    
+                    try {
+                        reader.readAsDataURL(file);
+                    } catch {
+                        reject(new Error(`Error al procesar el archivo: ${file.name}`));
                     }
-                };
-
-                reader.onerror = () => {
-                    reject(new Error(`Error al leer el archivo: ${file.name}`));
-                };
-
-                reader.onabort = () => {
-                    reject(new Error('Lectura del archivo cancelada'));
-                };
-
-                try {
+                });
+            });
+            
+            Promise.all(newPreviews)
+                .then(newPreviewUrls => {
+                    setAdditionalPreviews(prev => [...prev, ...newPreviewUrls]);
+                    setIsLoadingPreviews(false);
+                })
+                .catch(error => {
+                    console.error('Error al generar previews:', error);
+                    alert(`Error al generar las previsualizaciones: ${error.message}`);
+                    setIsLoadingPreviews(false);
+                });
+                
+        } catch (error) {
+            console.error('Error al comprimir las imágenes:', error);
+            // En caso de error, usar las imágenes originales
+            const newFiles = [...data.additional_images, ...validFiles];
+            setData('additional_images', newFiles);
+            
+            // Generar previews con las imágenes originales
+            setIsLoadingPreviews(true);
+            const newPreviews = validFiles.map(file => {
+                return new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        if (e.target?.result && typeof e.target.result === 'string') {
+                            resolve(e.target.result);
+                        } else {
+                            reject(new Error('No se pudo generar la previsualización'));
+                        }
+                    };
+                    reader.onerror = () => reject(new Error(`Error al leer el archivo: ${file.name}`));
                     reader.readAsDataURL(file);
-                } catch {
-                    reject(new Error(`Error al procesar el archivo: ${file.name}`));
-                }
+                });
             });
-        });
-
-        Promise.all(newPreviews)
-            .then(newPreviewUrls => {
-                setAdditionalPreviews(prev => [...prev, ...newPreviewUrls]);
-                setIsLoadingPreviews(false);
-            })
-            .catch(error => {
-                console.error('Error al generar previews:', error);
-                alert(`Error al generar las previsualizaciones: ${error.message}`);
-                setIsLoadingPreviews(false);
-            });
+            
+            Promise.all(newPreviews)
+                .then(newPreviewUrls => {
+                    setAdditionalPreviews(prev => [...prev, ...newPreviewUrls]);
+                    setIsLoadingPreviews(false);
+                })
+                .catch(error => {
+                    console.error('Error al generar previews:', error);
+                    setIsLoadingPreviews(false);
+                });
+        }
 
         // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
         if (fileInputRef.current) {
@@ -447,7 +525,7 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
                             <CardContent className="space-y-4">
                                 {/* ALERTA DE ADVERTENCIA */}
                                 <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 rounded mb-2 text-sm">
-                                    <strong>Advertencia:</strong> La imagen debe ser inferior a 5MB.
+                                    <strong>Advertencia:</strong> La imagen debe ser inferior a 5MB. Las imágenes se comprimirán automáticamente para optimizar el tamaño.
                                 </div>
                                 <div>
                                     <Label htmlFor="cover_image">Cambiar imagen (opcional)</Label>
@@ -501,6 +579,48 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
                                         >
                                             <Icon name="x" className="h-4 w-4" />
                                         </Button>
+                                    </div>
+                                                            )}
+
+                            {/* Estadísticas de compresión */}
+                            {showCompressionStats && compressionResults.length > 0 && (
+                                <div className="mt-6">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h4 className="text-sm font-medium text-muted-foreground">Estadísticas de compresión</h4>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setShowCompressionStats(false)}
+                                        >
+                                            <Icon name="x" className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    <CompressionStats 
+                                        results={compressionResults}
+                                        showDetails={true}
+                                    />
+                                </div>
+                                                            )}
+
+                                {/* Estadísticas de compresión para imagen de portada */}
+                                {showCompressionStats && compressionResults.length === 1 && data.cover_image && (
+                                    <div className="mt-4">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h4 className="text-sm font-medium text-muted-foreground">Estadísticas de compresión</h4>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setShowCompressionStats(false)}
+                                            >
+                                                <Icon name="x" className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                        <CompressionStats 
+                                            results={compressionResults}
+                                            showDetails={false}
+                                        />
                                     </div>
                                 )}
                             </CardContent>
@@ -698,7 +818,7 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
                         <CardContent className="space-y-4">
                             {/* ALERTA DE ADVERTENCIA */}
                             <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 rounded mb-2 text-sm">
-                                <strong>Advertencia:</strong> Cada imagen debe ser inferior a 5MB.
+                                <strong>Advertencia:</strong> Cada imagen debe ser inferior a 5MB. Las imágenes se comprimirán automáticamente para optimizar el tamaño.
                             </div>
                             <div className="flex items-center gap-4">
                                 <Button
@@ -736,7 +856,13 @@ export default function EditProperty({ property, user }: EditPropertyProps) {
                                 </p>
                             </div>
 
-                            {isLoadingPreviews && (
+                            {/* Progreso de compresión */}
+                            <CompressionProgress 
+                                isCompressing={isCompressing}
+                                progress={compressionProgress}
+                            />
+
+                            {isLoadingPreviews && !isCompressing && (
                                 <div className="flex items-center justify-center p-4">
                                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                                     <span className="ml-2 text-sm text-muted-foreground">Generando previsualizaciones...</span>
