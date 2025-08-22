@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark'=> ($appearance ?? 'system') == 'dark'])>
 
-        {{-- Inline script to detect system dark mode preference and apply it immediately --}}
-        <script>
-            (function() {
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    {{-- Inline script to detect system dark mode preference and apply it immediately --}}
+    <script>
+        (function() {
                 const appearance = '{{ $appearance ?? "system" }}';
 
                 if (appearance === 'system') {
@@ -18,33 +19,44 @@
                     }
                 }
             })();
-        </script>
+    </script>
 
-        {{-- Inline style to set the HTML background color based on our theme in app.css --}}
-        <style>
-            html {
-                background-color: oklch(1 0 0);
-            }
+    {{-- Inline style to set the HTML background color based on our theme in app.css --}}
+    <style>
+        html {
+            background-color: oklch(1 0 0);
+        }
 
-            html.dark {
-                background-color: oklch(0.145 0 0);
-            }
-        </style>
+        html.dark {
+            background-color: oklch(0.145 0 0);
+        }
+    </style>
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+    <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
-        <link rel="icon" href="/assets/logo/favicon.ico" sizes="any">
-        <link rel="apple-touch-icon" href="/assets/logo/iso.png">
+    <link rel="icon" href="/assets/logo/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/assets/logo/iso.png">
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
-        @routes
-        @viteReactRefresh
-        @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
-        @inertiaHead
-    </head>
-    <body class="font-sans antialiased">
-        @inertia
-    </body>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RS0DJDKJL2"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-RS0DJDKJL2');
+    </script>
+    @routes
+    @viteReactRefresh
+    @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+    @inertiaHead
+</head>
+
+<body class="font-sans antialiased">
+    @inertia
+</body>
+
 </html>
