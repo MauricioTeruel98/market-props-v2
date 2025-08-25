@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, AlertTriangle } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
@@ -45,6 +45,14 @@ export default function Register() {
             currentPage="registro"
         >
             <Head title="Registrarse" />
+            {/* Alerta informativa */}
+            <div className="mb-4 flex items-center gap-3 rounded-md border border-yellow-300 bg-yellow-50 px-4 py-3 text-yellow-800 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-200">
+                <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+                <div>
+                    <span className="font-semibold">Importante:</span> Aquí solamente deben registrarse las personas que deseen <span className="font-semibold">publicar una propiedad</span>. 
+                    Si estás buscando alquilar o comprar, <span className="font-semibold">no es necesario crearse una cuenta</span>.
+                </div>
+            </div>
             <form method="POST" className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
                     <div className="grid gap-2">

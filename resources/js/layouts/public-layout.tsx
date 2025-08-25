@@ -143,6 +143,12 @@ export default function PublicLayout({
                             <ul className="space-y-2">
                                 <li className="text-sm sm:text-base text-gray-400">Alquiler</li>
                                 <li className="text-sm sm:text-base text-gray-400">Venta</li>
+                                <li className="text-sm sm:text-base text-gray-400">
+                                    <Link href="/terms" className="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">Términos y condiciones</Link>
+                                </li>
+                                <li className="text-sm sm:text-base text-gray-400">
+                                    <Link href="/privacy" className="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">Política de privacidad</Link>
+                                </li>
                                 {/* <li className="text-sm sm:text-base text-gray-400">Asesoramiento</li> */}
                             </ul>
                         </div>

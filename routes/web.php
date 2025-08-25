@@ -61,6 +61,15 @@ Route::get('/autenticate', function () {
 Route::get('/public/properties', [PublicPropertiesController::class, 'index'])->name('public.properties.index');
 Route::get('/public/properties/{property}', [PublicPropertiesController::class, 'show'])->name('public.properties.show');
 
+// Rutas para políticas legales
+Route::get('/privacy', function () {
+    return Inertia::render('public/privacy-policy');
+})->name('privacy');
+
+Route::get('/terms', function () {
+    return Inertia::render('public/terms');
+})->name('terms');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

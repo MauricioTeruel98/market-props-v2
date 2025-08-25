@@ -140,9 +140,9 @@ export default function Authenticate() {
             <div className="flex justify-center flex-wrap items-center gap-3 text-xs">
               <Link href={route('home')} className="underline-offset-4 hover:underline">Volver al inicio</Link>
               <span className="text-muted-foreground">•</span>
-              <Link href="" className="underline-offset-4 hover:underline">Términos y condiciones</Link>
+              <Link href={route('terms')} className="underline-offset-4 hover:underline">Términos y condiciones</Link>
               <span className="text-muted-foreground">•</span>
-              <Link href="" className="underline-offset-4 hover:underline">Política de privacidad</Link>
+              <Link href={route('privacy')} className="underline-offset-4 hover:underline">Política de privacidad</Link>
             </div>
           </div>
         </div>
