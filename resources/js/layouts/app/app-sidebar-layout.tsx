@@ -2,6 +2,10 @@ import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
+import { BottomNavigation } from '@/components/bottom-navigation';
+import { EnhancedBreadcrumbs } from '@/components/enhanced-breadcrumbs';
+// import { QuickActions } from '@/components/quick-actions';
+// import { ContextualNavigation } from '@/components/contextual-navigation';
 import { type BreadcrumbItem } from '@/types';
 import { type PropsWithChildren } from 'react';
 
@@ -9,10 +13,14 @@ export default function AppSidebarLayout({ children, breadcrumbs = [] }: PropsWi
     return (
         <AppShell variant="sidebar">
             <AppSidebar />
-            <AppContent variant="sidebar" className="overflow-x-hidden">
+            <AppContent variant="sidebar" className="overflow-x-hidden pb-16 md:pb-0">
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
+                <div className="md:hidden">
+                    <EnhancedBreadcrumbs />
+                </div>
                 {children}
             </AppContent>
+            <BottomNavigation />
         </AppShell>
     );
 }
